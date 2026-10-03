@@ -141,9 +141,9 @@ def _key(system, plain):
     return hashlib.sha1(json.dumps([system, plain], ensure_ascii=False).encode()).hexdigest()
 
 
-def system_prompt(prompts, client_system=""):
+def system_prompt(prompts, client_system="", guest=False):
     system = prompts.get("chat_system")
-    rules = house_rules()
+    rules = None if guest else house_rules()  # house rules are the owner's private business facts
     if rules:
         system += "\n\n" + rules
     if client_system:
@@ -162,14 +162,20 @@ def augment(text, hits, skill, cfg):
     return text if not parts else "\n\n".join(parts) + "\n\nUSER MESSAGE:\n" + text
 
 
-def prepare(llm, cfg, prompts, messages):
-    """Returns (msgs for the model, plain history incl. the new user turn, hits, skill)."""
+def tools_for(guest):
+    """Invited guests only get the calculator: no searching, reading or writing the owner's files."""
+    return [CALC_TOOL] if guest else TOOLS
+
+
+def prepare(llm, cfg, prompts, messages, guest=False):
+    """Returns (msgs for the model, plain history incl. the new user turn, hits, skill).
+    guest=True (someone invited from far away): no notes, house rules or private skills."""
     client_system = "\n".join(m["content"] for m in messages if m.get("role") == "system" and m.get("content"))
     plain = [{"role": m["role"], "content": m.get("content") or ""} for m in messages
              if m.get("role") in ("user", "assistant")]
     if not plain or plain[-1]["role"] != "user":
         raise ValueError("the last message must come from the user")
-    system = system_prompt(prompts, client_system)
+    system = system_prompt(prompts, client_system, guest)
     history, last = plain[:-1], plain[-1]["content"]
     prefix = CONVOS.get(_key(system, history))
     budget = cfg.get("num_ctx", 16384) * 2.5  # rough chars that fit, leaving room for the answer
@@ -179,9 +185,11 @@ def prepare(llm, cfg, prompts, messages):
             keep = keep[1:]
         prefix = [{"role": "system", "content": system}] + keep
     seen = "\n".join(m.get("content") or "" for m in prefix)
-    hits = [h for h in knowledge.search(last, llm, cfg, k=cfg.get("chat_notes", 3))
-            if h["text"][:300] not in seen]  # don't pay to re-read notes already in this conversation
+    hits = [] if guest else [h for h in knowledge.search(last, llm, cfg, k=cfg.get("chat_notes", 3))
+                             if h["text"][:300] not in seen]  # don't pay to re-read notes already in this conversation
     skill = skills.match(last, llm, cfg)
+    if guest and skill and skill["path"].startswith(skills.LOCAL_SKILLS_DIR):
+        skill = None  # your own skills in local/ are private
     msgs = [dict(m) for m in prefix] + [{"role": "user", "content": augment(last, hits, skill, cfg)}]
     return msgs, plain, hits, skill, system
 
@@ -214,8 +222,8 @@ def cancel_read_ahead(keep=None):
             pass
 
 
-def read_ahead(llm, cfg, prompts, messages):
-    msgs = prepare(llm, cfg, prompts, messages)[0]
+def read_ahead(llm, cfg, prompts, messages, guest=False):
+    msgs = prepare(llm, cfg, prompts, messages, guest)[0]
     sig = _sig(msgs)
     with _ahead_lock:
         if _ahead["sig"] == sig:
@@ -229,7 +237,8 @@ def read_ahead(llm, cfg, prompts, messages):
             if _ahead["sig"] == sig:
                 _ahead["resp"] = r
     try:
-        for _ in llm.chat_stream(cfg["model"], msgs, tools=TOOLS, options={"num_predict": 1}, on_open=opened):
+        for _ in llm.chat_stream(cfg["model"], msgs, tools=tools_for(guest), options={"num_predict": 1},
+                                 on_open=opened):
             pass
     except Exception:
         pass  # cancelled or failed: harmless, the real request does the work
@@ -240,18 +249,19 @@ def read_ahead(llm, cfg, prompts, messages):
     return True
 
 
-def stream_chat(llm, cfg, prompts, messages, max_steps=6):
+def stream_chat(llm, cfg, prompts, messages, max_steps=6, guest=False):
     """Yields events: status, token, tool, done. Shared by the web app, the OpenAI/Ollama-compatible APIs
     and the evals, so every surface gets the same knowledge, skills and tools."""
     t0 = time.time()
-    msgs, plain, hits, skill, system = prepare(llm, cfg, prompts, messages)
+    msgs, plain, hits, skill, system = prepare(llm, cfg, prompts, messages, guest)
+    tools = tools_for(guest)
     cancel_read_ahead(keep=_sig(msgs))  # a read-ahead of this very question is useful; any other is in the way
     if skill:
         yield {"type": "status", "text": "Using skill: " + skill["name"]}
     used, first, final = [], None, {"content": ""}
     for step in range(max_steps + 1):
         last_round = step == max_steps
-        for kind, val in llm.chat_stream(cfg["model"], msgs, tools=None if last_round else TOOLS):
+        for kind, val in llm.chat_stream(cfg["model"], msgs, tools=None if last_round else tools):
             if kind == "token":
                 if first is None:
                     first = round(time.time() - t0, 2)
@@ -270,7 +280,9 @@ def stream_chat(llm, cfg, prompts, messages, max_steps=6):
             args = _args(call)
             used.append(name)
             yield {"type": "tool", "name": name, "args": args}
-            msgs.append({"role": "tool", "tool_name": name, "content": run_tool(name, args, llm, cfg)})
+            allowed = any(t["function"]["name"] == name for t in tools)
+            msgs.append({"role": "tool", "tool_name": name,
+                         "content": run_tool(name, args, llm, cfg) if allowed else "Tool not available."})
     CONVOS[_key(system, plain + [{"role": "assistant", "content": final["content"]}])] = msgs
     while len(CONVOS) > MAX_CONVOS:
         CONVOS.popitem(last=False)

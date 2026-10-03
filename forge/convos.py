@@ -13,10 +13,15 @@ MAX_BYTES = 2_000_000
 _lock = threading.Lock()
 
 
-def _path(cid):
+def _dir(guest=None):
+    """Your chats live in data/convos; each invited guest gets a separate folder they alone can see."""
+    return os.path.join(DIR, "guests", guest) if guest else DIR
+
+
+def _path(cid, guest=None):
     if not ID.match(cid or ""):
         raise ValueError("bad conversation id")
-    return os.path.join(DIR, cid + ".json")
+    return os.path.join(_dir(guest), cid + ".json")
 
 
 def _title(messages):
@@ -25,14 +30,15 @@ def _title(messages):
     return (first[:57] + "…") if len(first) > 60 else (first or "New chat")
 
 
-def listing(limit=300):
+def listing(limit=300, guest=None):
     out = []
-    if os.path.isdir(DIR):
-        for name in os.listdir(DIR):
+    d0 = _dir(guest)
+    if os.path.isdir(d0):
+        for name in os.listdir(d0):
             if not name.endswith(".json"):
                 continue
             try:
-                with open(os.path.join(DIR, name)) as f:
+                with open(os.path.join(d0, name)) as f:
                     d = json.load(f)
                 last = next((m.get("content", "") for m in reversed(d.get("messages", []))
                              if m.get("role") == "assistant"), "")
@@ -44,15 +50,15 @@ def listing(limit=300):
     return out[:limit]
 
 
-def get(cid):
+def get(cid, guest=None):
     try:
-        with open(_path(cid)) as f:
+        with open(_path(cid, guest)) as f:
             return json.load(f)
     except FileNotFoundError:
         return None
 
 
-def save(cid, body):
+def save(cid, body, guest=None):
     messages = [{k: m[k] for k in ("role", "content", "meta") if k in m}
                 for m in body.get("messages", []) if m.get("role") in ("user", "assistant")
                 and isinstance(m.get("content"), str)]
@@ -62,16 +68,16 @@ def save(cid, body):
     if len(data) > MAX_BYTES:
         raise ValueError("conversation is too long to save (2 MB limit)")
     with _lock:
-        os.makedirs(DIR, exist_ok=True)
-        tmp = _path(cid) + ".tmp"
+        os.makedirs(_dir(guest), exist_ok=True)
+        tmp = _path(cid, guest) + ".tmp"
         with open(tmp, "w") as f:
             f.write(data)
-        os.replace(tmp, _path(cid))
+        os.replace(tmp, _path(cid, guest))
     return {k: d[k] for k in ("id", "title", "updated")}
 
 
-def delete(cid):
+def delete(cid, guest=None):
     try:
-        os.remove(_path(cid))
+        os.remove(_path(cid, guest))
     except FileNotFoundError:
         pass

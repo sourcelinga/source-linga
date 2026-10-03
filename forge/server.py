@@ -22,7 +22,7 @@ from .common import (DATA, JOBS, ROOT, allowed_path, backup_and_write, db, expan
                      save_config, start_job)
 from .llm import Ollama
 from .prompts import Prompts
-from . import chat as chat_mod, convos, improve as imp, knowledge, skills, updater
+from . import chat as chat_mod, convos, improve as imp, knowledge, share, skills, updater
 
 prompts = Prompts()
 _update_lock = threading.Lock()
@@ -36,7 +36,12 @@ STATIC = {"/manifest.webmanifest": ("manifest.webmanifest", "application/manifes
           "/icon-180.png": ("icon-180.png", "image/png"), "/apple-touch-icon.png": ("icon-180.png", "image/png"),
           "/icon-192.png": ("icon-192.png", "image/png"), "/icon-512.png": ("icon-512.png", "image/png"),
           "/logo-64.png": ("logo-64.png", "image/png"), "/favicon.ico": ("logo-64.png", "image/png"),
-          "/qr.js": ("qr.js", "text/javascript"), "/get": ("get.html", "text/html; charset=utf-8")}
+          "/qr.js": ("qr.js", "text/javascript"), "/get": ("get.html", "text/html; charset=utf-8"),
+          "/join": ("join.html", "text/html; charset=utf-8")}
+# what someone invited from far away may use: chatting, with their own chat list, and nothing else
+GUEST_GET = ("/app", "/api/convos", "/api/warm", "/api/status", "/v1/models", "/ollama/api/tags", "/ollama", "/ollama/",
+             "/ollama/api/version")
+GUEST_POST = ("/api/chat/stream", "/api/read_ahead", "/v1/chat/completions", "/ollama/api/chat", "/ollama/api/generate")
 DOWNLOADS = {"/download/android": ("SourceLinga.apk", "application/vnd.android.package-archive"),
              "/download/mac": ("SourceLinga-mac.zip", "application/zip")}
 
@@ -83,6 +88,7 @@ def new_device_key():
 
 
 _failed = []  # times of wrong pairing codes (brute-force brake)
+_join_failed = []  # times of bad invite links (kept apart, so they can't lock out pairing at home)
 
 
 def lan_urls(port):
@@ -181,6 +187,7 @@ def run_update(job, only, force):
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "SourceLinga/1.0"
+    guest = None  # the invited guest's id, for requests made with a guest key
 
     def log_message(self, fmt, *args):  # quiet
         pass
@@ -205,6 +212,17 @@ class Handler(BaseHTTPRequestHandler):
         ip = self.client_address[0]
         return (ip[7:] if ip.startswith("::ffff:") else ip) in ("127.0.0.1", "::1")
 
+    def _via_tunnel(self):
+        """True for requests from the internet through the share tunnel (Cloudflare always adds these)."""
+        return bool(self.headers.get("Cf-Ray") or self.headers.get("Cf-Connecting-Ip")) or \
+            self._host().endswith(".trycloudflare.com")
+
+    def _redirect(self, where):
+        self.send_response(302)
+        self.send_header("Location", where)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def _token(self):
         auth = self.headers.get("Authorization") or ""
         if auth.lower().startswith("bearer "):
@@ -222,12 +240,13 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         if origin and origin != "null" and urlparse(origin).hostname != self._host():
             return None
-        if self._local_client() and self._host() in ("127.0.0.1", "localhost", "::1"):
+        if self._local_client() and self._host() in ("127.0.0.1", "localhost", "::1") and not self._via_tunnel():
             return "local"
         tok = self._token()
         if tok and hmac.compare_digest(tok.encode(), device_key().encode()):
             return "device"
-        return None
+        self.guest = share.guest_for(tok)
+        return "guest" if self.guest else None
 
     def _static(self, path):
         name, ctype = STATIC[path]
@@ -236,7 +255,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "max-age=86400")
+        self.send_header("Cache-Control", "no-cache" if ctype.startswith("text/html") else "max-age=86400")
         self.end_headers()
         self.wfile.write(data)
 
@@ -291,6 +310,8 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path in STATIC:
             return self._static(u.path)
+        if u.path == "/pair" and self._via_tunnel():
+            return self._redirect("/join")  # from the internet only invite links work, never the 6-digit code
         if u.path == "/pair":
             with open(os.path.join(ROOT, "web", "pair.html"), "rb") as f:
                 return self._send(200, f.read(), "text/html; charset=utf-8")
@@ -298,17 +319,20 @@ class Handler(BaseHTTPRequestHandler):
             return self._download(u.path)
         access = self._access()
         if u.path == "/api/info":  # lets an app check that an address really is Source Linga, before pairing
+            remote = self._via_tunnel()
             return self._send(200, {"name": APP_NAME, "version": APP_VERSION, "paired": access is not None,
-                                    "computer": _computer_name(), "pair_code": pair_code(), "apps": [k for k, (n, _) in DOWNLOADS.items()
+                                    "guest": access == "guest", "remote": remote, "computer": _computer_name(),
+                                    "pair_code": None if remote else pair_code(), "apps": [k for k, (n, _) in DOWNLOADS.items()
                                                                            if os.path.isfile(os.path.join(DIST, n))]})
         if access is None:
-            if u.path in ("/", "/index.html", "/app") and not self._local_client():
-                self.send_response(302)
-                self.send_header("Location", "/pair")
-                self.end_headers()
-                return
+            if u.path in ("/", "/index.html", "/app") and (self._via_tunnel() or not self._local_client()):
+                return self._redirect("/join" if self._via_tunnel() else "/pair")
             return self._send(401, {"error": "not paired: open /pair on this device, or send the device key "
                                               "as 'Authorization: Bearer <key>'"})
+        if access == "guest" and u.path in ("/", "/index.html"):
+            return self._redirect("/app")
+        if access == "guest" and not (u.path in GUEST_GET or u.path.startswith("/api/convos/")):
+            return self._send(403, {"error": "not available to invited guests"})
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         try:
             if u.path in ("/", "/index.html", "/app"):
@@ -316,9 +340,9 @@ class Handler(BaseHTTPRequestHandler):
                 with open(os.path.join(ROOT, "web", page), "rb") as f:
                     return self._send(200, f.read(), "text/html; charset=utf-8")
             if u.path == "/api/convos":
-                return self._send(200, convos.listing())
+                return self._send(200, convos.listing(guest=self.guest))
             if u.path.startswith("/api/convos/"):
-                d = convos.get(u.path.rsplit("/", 1)[1])
+                d = convos.get(u.path.rsplit("/", 1)[1], self.guest)
                 return self._send(200, d) if d else self._send(404, {"error": "no such conversation"})
             if u.path == "/api/warm":
                 cfg, llm = ctx()
@@ -334,11 +358,18 @@ class Handler(BaseHTTPRequestHandler):
                                                  if os.path.isfile(os.path.join(DIST, n))],
                                         "pair_code": pair_code(), "device_key": device_key(),
                                         "listening_on_lan": SERVER.get("lan", False)})
+            if u.path == "/api/share":
+                if access != "local":
+                    return self._send(403, {"error": "only on the Mac itself"})
+                return self._send(200, share.overview())
             if u.path == "/api/skills":
                 return self._send(200, skills.listing())
             if u.path in ("/v1/models", "/ollama/api/tags", "/ollama", "/ollama/", "/ollama/api/version"):
                 return self._compat_get(u.path)
             if u.path == "/api/status":
+                if access == "guest":
+                    cfg, llm = ctx()
+                    return self._send(200, {"ollama": llm.up(), "model": cfg["model"]})
                 return self._send(200, status())
             if u.path.startswith("/api/job/"):
                 j = JOBS.get(u.path.rsplit("/", 1)[1])
@@ -388,26 +419,34 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError:
             return self._send(400, {"error": "bad JSON"})
         if p == "/pair":
+            if self._via_tunnel():
+                return self._send(403, {"error": "From outside your home, use the invite link you were sent."})
             return self._pair(body)
+        if p == "/join":
+            return self._join(body)
         access = self._access()
         if access is None:
             return self._send(401, {"error": "not paired"})
+        if access == "guest" and not (p in GUEST_POST or p.startswith("/api/convos/")):
+            return self._send(403, {"error": "not available to invited guests"})
         try:
             cfg, llm = ctx()
             if p == "/api/chat/stream":
                 def sse(ev):
                     self.wfile.write(("data: " + json.dumps(ev) + "\n\n").encode())
                 self._stream_start("text/event-stream")
-                return self._pipe(chat_mod.stream_chat(llm, cfg, prompts, body["messages"]), sse)
+                return self._pipe(chat_mod.stream_chat(llm, cfg, prompts, body["messages"], guest=bool(self.guest)),
+                                  sse)
             if p.startswith("/api/convos/"):
                 parts = p.split("/")  # /api/convos/<id> saves, /api/convos/<id>/delete deletes
                 if len(parts) == 5 and parts[4] == "delete":
-                    convos.delete(parts[3])
+                    convos.delete(parts[3], self.guest)
                     return self._send(200, {"ok": True})
-                return self._send(200, convos.save(parts[3], body))
+                return self._send(200, convos.save(parts[3], body, self.guest))
             if p == "/api/read_ahead":
                 if cfg.get("read_ahead", True) and body.get("messages"):
-                    threading.Thread(target=lambda: _quiet(chat_mod.read_ahead, llm, cfg, prompts, body["messages"]),
+                    g = bool(self.guest)
+                    threading.Thread(target=lambda: _quiet(chat_mod.read_ahead, llm, cfg, prompts, body["messages"], g),
                                      daemon=True).start()
                 return self._send(200, {"ok": True})
             if p in ("/v1/chat/completions", "/ollama/api/chat", "/ollama/api/generate"):
@@ -424,6 +463,23 @@ class Handler(BaseHTTPRequestHandler):
                     # the listening address only changes on restart; Forge.app starts it again in ~5 s
                     threading.Timer(0.5, lambda: os._exit(0)).start()
                 return self._send(200, {"ok": True})
+            if p == "/api/share":
+                if access != "local":
+                    return self._send(403, {"error": "only on the Mac itself"})
+                port = int(os.environ.get("FORGE_PORT", cfg.get("port", 8777)))
+                if "on" in body:
+                    share.turn_on(port) if body["on"] else share.turn_off()
+                if body.get("remove"):
+                    share.remove(body["remove"])
+                token = None
+                if "invite" in body:
+                    token = share.create(body["invite"])[1]
+                elif body.get("renew"):
+                    token = share.renew(body["renew"])
+                out = share.overview()
+                if token:
+                    out["link"] = (share.url() or "") + "/join#" + token
+                return self._send(200, out)
             if p == "/api/chat":
                 j = start_job("chat", chat_mod.chat, llm, cfg, prompts, body["messages"])
                 return self._send(200, {"job": j.id})
@@ -515,6 +571,31 @@ def _pair(self, body):
     self.wfile.write(data)
 
 
+def _join(self, body):
+    """Someone opened their invite link: use it up and give this browser their own guest key."""
+    now = time.time()
+    _join_failed[:] = [t for t in _join_failed if now - t < 600]
+    if len(_join_failed) >= 20:
+        return self._send(429, {"error": "too many tries; wait 10 minutes"})
+    got = share.accept(str(body.get("token", "")))
+    if not got:
+        _join_failed.append(now)
+        return self._send(403, {"error": "This invite link has already been used or has expired. "
+                                         "Ask for a new one."})
+    gid, key, name = got
+    out = {"ok": True, "name": name, "computer": _computer_name()}
+    if body.get("app"):
+        out["key"] = key
+    data = json.dumps(out).encode()
+    self.send_response(200)
+    self.send_header("Content-Type", "application/json")
+    self.send_header("Content-Length", str(len(data)))
+    self.send_header("Set-Cookie", "sl_key=%s; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict%s"
+                     % (key, "; Secure" if self._via_tunnel() else ""))
+    self.end_headers()
+    self.wfile.write(data)
+
+
 def _compat_get(self, path):
     """Just enough of the OpenAI and Ollama APIs for apps like Enchanted (iPhone/iPad/Mac) and Shortcuts."""
     cfg, llm = ctx()
@@ -543,7 +624,7 @@ def _compat_post(self, path, body, cfg, llm):
     for m in messages:
         if isinstance(m.get("content"), list):
             m["content"] = "\n".join(part.get("text", "") for part in m["content"] if isinstance(part, dict))
-    events = chat_mod.stream_chat(llm, cfg, prompts, messages)
+    events = chat_mod.stream_chat(llm, cfg, prompts, messages, guest=bool(self.guest))
     model_name = body.get("model") or MODEL_ID
     stream = body.get("stream", path != "/v1/chat/completions")  # Ollama streams by default, OpenAI doesn't
     if not stream:
@@ -593,6 +674,7 @@ def _compat_post(self, path, body, cfg, llm):
 
 
 Handler._pair = _pair
+Handler._join = _join
 Handler._compat_get = _compat_get
 Handler._compat_post = _compat_post
 SERVER = {}
@@ -646,6 +728,8 @@ def main():
     threading.Thread(target=warm_up, daemon=True).start()
     port = int(os.environ.get("FORGE_PORT", cfg.get("port", 8777)))
     advertise(port, bool(cfg.get("lan_access")))
+    threading.Thread(target=share.ensure, args=(port,), daemon=True).start()  # sharing stays on across restarts
+    threading.Thread(target=share.watchdog, args=(port,), daemon=True).start()
     if cfg.get("lan_access"):
         srv = DualStackServer(("::", port), Handler)
         SERVER["lan"] = True
