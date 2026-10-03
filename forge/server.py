@@ -22,17 +22,23 @@ from .common import (DATA, JOBS, ROOT, allowed_path, backup_and_write, db, expan
                      save_config, start_job)
 from .llm import Ollama
 from .prompts import Prompts
-from . import chat as chat_mod, improve as imp, knowledge, skills, updater
+from . import chat as chat_mod, convos, improve as imp, knowledge, skills, updater
 
 prompts = Prompts()
 _update_lock = threading.Lock()
 ACTIVE = {"last_chat": 0.0}  # the scheduler waits while you are chatting
 APP_NAME = "Source Linga"
+APP_VERSION = "1.1.0"
 MODEL_ID = "source-linga"
+SERVICE_TYPE = "_sourcelinga._tcp"  # Bonjour name the iPhone/Android/Mac apps look for
+DIST = os.path.join(ROOT, "dist")  # built apps (the Android APK, the Mac app zip), served to phones at /get
 STATIC = {"/manifest.webmanifest": ("manifest.webmanifest", "application/manifest+json"),
           "/icon-180.png": ("icon-180.png", "image/png"), "/apple-touch-icon.png": ("icon-180.png", "image/png"),
           "/icon-192.png": ("icon-192.png", "image/png"), "/icon-512.png": ("icon-512.png", "image/png"),
-          "/logo-64.png": ("logo-64.png", "image/png"), "/favicon.ico": ("logo-64.png", "image/png")}
+          "/logo-64.png": ("logo-64.png", "image/png"), "/favicon.ico": ("logo-64.png", "image/png"),
+          "/qr.js": ("qr.js", "text/javascript"), "/get": ("get.html", "text/html; charset=utf-8")}
+DOWNLOADS = {"/download/android": ("SourceLinga.apk", "application/vnd.android.package-archive"),
+             "/download/mac": ("SourceLinga-mac.zip", "application/zip")}
 
 
 def ctx():
@@ -95,6 +101,26 @@ def lan_urls(port):
     except OSError:
         pass
     return urls
+
+
+def _computer_name():
+    try:
+        return subprocess.run(["scutil", "--get", "ComputerName"], capture_output=True, text=True,
+                              timeout=3).stdout.strip() or "Mac"
+    except (OSError, subprocess.SubprocessError):
+        return "Mac"
+
+
+def advertise(port, on):
+    """Announce this Mac on the Wi-Fi with Bonjour, so the phone apps find it without typing an address."""
+    subprocess.run(["pkill", "-f", SERVICE_TYPE], capture_output=True)  # an old announcer from the last run
+    if on:
+        try:
+            subprocess.Popen(["dns-sd", "-R", "%s on %s" % (APP_NAME, _computer_name()), SERVICE_TYPE, "local",
+                              str(port), "path=/app", "version=" + APP_VERSION],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            pass
 
 
 _archive = {"at": 0, "list": [], "ok": False}
@@ -214,6 +240,20 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _download(self, path):
+        name, ctype = DOWNLOADS[path]
+        try:
+            with open(os.path.join(DIST, name), "rb") as f:
+                data = f.read()
+        except OSError:
+            return self._send(404, {"error": "this app has not been built on this Mac yet"})
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Content-Disposition", 'attachment; filename="%s"' % name)
+        self.end_headers()
+        self.wfile.write(data)
+
     def _stream_start(self, ctype):
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -254,9 +294,15 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/pair":
             with open(os.path.join(ROOT, "web", "pair.html"), "rb") as f:
                 return self._send(200, f.read(), "text/html; charset=utf-8")
+        if u.path in DOWNLOADS:
+            return self._download(u.path)
         access = self._access()
+        if u.path == "/api/info":  # lets an app check that an address really is Source Linga, before pairing
+            return self._send(200, {"name": APP_NAME, "version": APP_VERSION, "paired": access is not None,
+                                    "computer": _computer_name(), "apps": [k for k, (n, _) in DOWNLOADS.items()
+                                                                           if os.path.isfile(os.path.join(DIST, n))]})
         if access is None:
-            if u.path in ("/", "/index.html") and not self._local_client():
+            if u.path in ("/", "/index.html", "/app") and not self._local_client():
                 self.send_response(302)
                 self.send_header("Location", "/pair")
                 self.end_headers()
@@ -265,9 +311,15 @@ class Handler(BaseHTTPRequestHandler):
                                               "as 'Authorization: Bearer <key>'"})
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         try:
-            if u.path in ("/", "/index.html"):
-                with open(os.path.join(ROOT, "web", "index.html"), "rb") as f:
+            if u.path in ("/", "/index.html", "/app"):
+                page = "app.html" if u.path == "/app" else "index.html"
+                with open(os.path.join(ROOT, "web", page), "rb") as f:
                     return self._send(200, f.read(), "text/html; charset=utf-8")
+            if u.path == "/api/convos":
+                return self._send(200, convos.listing())
+            if u.path.startswith("/api/convos/"):
+                d = convos.get(u.path.rsplit("/", 1)[1])
+                return self._send(200, d) if d else self._send(404, {"error": "no such conversation"})
             if u.path == "/api/warm":
                 cfg, llm = ctx()
                 threading.Thread(target=lambda: _quiet(llm.warm, cfg["model"]), daemon=True).start()
@@ -278,6 +330,8 @@ class Handler(BaseHTTPRequestHandler):
                 cfg = load_config()
                 port = int(os.environ.get("FORGE_PORT", cfg.get("port", 8777)))
                 return self._send(200, {"lan_access": bool(cfg.get("lan_access")), "urls": lan_urls(port),
+                                        "apps": [k for k, (n, _) in DOWNLOADS.items()
+                                                 if os.path.isfile(os.path.join(DIST, n))],
                                         "pair_code": pair_code(), "device_key": device_key(),
                                         "listening_on_lan": SERVER.get("lan", False)})
             if u.path == "/api/skills":
@@ -345,6 +399,12 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(("data: " + json.dumps(ev) + "\n\n").encode())
                 self._stream_start("text/event-stream")
                 return self._pipe(chat_mod.stream_chat(llm, cfg, prompts, body["messages"]), sse)
+            if p.startswith("/api/convos/"):
+                parts = p.split("/")  # /api/convos/<id> saves, /api/convos/<id>/delete deletes
+                if len(parts) == 5 and parts[4] == "delete":
+                    convos.delete(parts[3])
+                    return self._send(200, {"ok": True})
+                return self._send(200, convos.save(parts[3], body))
             if p == "/api/read_ahead":
                 if cfg.get("read_ahead", True) and body.get("messages"):
                     threading.Thread(target=lambda: _quiet(chat_mod.read_ahead, llm, cfg, prompts, body["messages"]),
@@ -443,7 +503,10 @@ def _pair(self, body):
     if not hmac.compare_digest(str(body.get("code", "")).strip().encode(), pair_code().encode()):
         _failed.append(now)
         return self._send(403, {"error": "wrong code"})
-    data = json.dumps({"ok": True}).encode()
+    out = {"ok": True, "name": APP_NAME, "computer": _computer_name()}
+    if body.get("app"):  # native apps keep the key themselves instead of using a browser cookie
+        out["key"] = device_key()
+    data = json.dumps(out).encode()
     self.send_response(200)
     self.send_header("Content-Type", "application/json")
     self.send_header("Content-Length", str(len(data)))
@@ -582,6 +645,7 @@ def main():
         threading.Thread(target=scheduler, daemon=True).start()
     threading.Thread(target=warm_up, daemon=True).start()
     port = int(os.environ.get("FORGE_PORT", cfg.get("port", 8777)))
+    advertise(port, bool(cfg.get("lan_access")))
     if cfg.get("lan_access"):
         srv = DualStackServer(("::", port), Handler)
         SERVER["lan"] = True
