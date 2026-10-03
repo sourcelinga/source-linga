@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Liquid Glass backdrop: soft colour light behind the translucent panels -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item><shape><solid android:color="@color/bg" /></shape></item>
+    <item><shape><gradient android:type="radial" android:gradientRadius="420dp" android:centerX="0.1" android:centerY="0.05"
+        android:startColor="@color/blob1" android:endColor="#00000000" /></shape></item>
+    <item><shape><gradient android:type="radial" android:gradientRadius="380dp" android:centerX="0.95" android:centerY="0.35"
+        android:startColor="@color/blob2" android:endColor="#00000000" /></shape></item>
+    <item><shape><gradient android:type="radial" android:gradientRadius="420dp" android:centerX="0.3" android:centerY="1.0"
+        android:startColor="@color/blob3" android:endColor="#00000000" /></shape></item>
+</layer-list>
