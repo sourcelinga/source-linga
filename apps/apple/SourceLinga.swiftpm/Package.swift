@@ -13,7 +13,7 @@ let package = Package(
             targets: ["App"],
             bundleIdentifier: "com.sourcelinga.app",
             teamIdentifier: "",
-            displayVersion: "1.1.0",
+            displayVersion: "2.0.0",
             bundleVersion: "1",
             appIcon: .asset("AppIcon"),
             accentColor: .presetColor(.indigo),
