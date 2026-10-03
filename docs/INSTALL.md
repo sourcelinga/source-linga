@@ -100,9 +100,28 @@ Extras: **Share → Source Linga** from any app starts a chat with the shared te
 
 ---
 
-## Away from home (optional)
+## Someone far away (optional)
 
-Install the free **[Tailscale](https://tailscale.com)** app on the AI Mac and on your phone, and sign in to both with the same account. In the phone app, use **Change Mac** and type the Mac's Tailscale address (it starts with `100.`). Your chats stay encrypted, and the AI still runs only on your Mac.
+Let a friend, family member or colleague in another city use the AI on your Mac. They need **no app, no account and no pairing code**, only a link from you.
+
+### On your Mac
+1. In Source Linga, click **🛠 Tools → Devices**.
+2. Tick **Share with someone far away** and click **OK**. The first time, Source Linga downloads Cloudflare's free connector (about 40 MB). After a few seconds an **Address** appears.
+3. Type the person's name and click **Create invite link**.
+4. Click **Copy link** (or scan the QR code) and send it to them by WhatsApp, iMessage or email.
+
+### On their phone or computer
+1. Open the link.
+2. Tap **Accept invite**, then **Start chatting**.
+3. To keep it one tap away: **iPhone/iPad** Share → *Add to Home Screen*; **Android** ⋮ → *Add to Home screen*; **computer** bookmark it.
+
+### Good to know
+- **Private by design.** Each link works **once**, for one person, within 7 days. Invited people can only chat, and only see their own chats. They never see your files, notes, house rules, chats, tools or pairing code. Nobody can sign in with the 6-digit code from the internet.
+- **Your Mac does the work.** It must be on, awake and online. While sharing is on, Source Linga keeps it from going to sleep by itself (closing a laptop's lid still sleeps it).
+- **If the address changes.** If your Mac restarts or you turn sharing off and on, the address changes. Click **New link** next to the person and send it again; their chats are kept.
+- **Remove someone** with **Remove**. Their access stops at once and their chats are deleted.
+
+> Prefer a permanent private network instead? The free **[Tailscale](https://tailscale.com)** app works too: install it on both devices, share your Mac with the other person from Tailscale's admin page, and in the phone app use **Change Mac** with the Mac's `100.x.y.z` address.
 
 ---
 
@@ -130,6 +149,8 @@ Download the newest **SourceLinga.dmg** and drag the app into Applications again
 | The Mac isn't in the phone's list | Type the address shown in **Tools → Devices**. Guest Wi-Fi networks often block devices from seeing each other. |
 | *Wrong code* | Codes are 6 digits. After 5 wrong tries, wait 10 minutes. |
 | The first answer is slow | The model is loading into memory (10–20 s). Later answers start in a few seconds. |
+| An invite link says *already used or expired* | Each link works once, within 7 days. On the Mac, click **New link** next to the person and send it again. |
+| A far-away person sees *Can't reach the Mac* | The Mac is asleep, off or offline, or sharing was turned off. |
 | *The AI engine is off* | Click **Start engine** in the banner, or **Settings → Start the AI engine**. |
 
 ---
