@@ -81,6 +81,12 @@ ol li::marker{color:var(--accent);font-weight:700}
     <p class="muted" id="nomac" hidden>The Mac app hasn't been built here yet. See github.com/sourcelinga/source-linga for instructions.</p>
   </section>
 
+  <section class="card" id="remote">
+    <h2>Invited from far away?</h2>
+    <p>Open the <b>invite link</b> you were sent. It signs you in on this device in one tap. No pairing code, no account and nothing to install.</p>
+    <a class="btn" href="/join">I have an invite link</a>
+  </section>
+
   <div class="other"><button id="all">Show instructions for every device</button></div>
 </main>
 <script>
@@ -89,6 +95,7 @@ const mine=/Android/.test(ua)?'android':/iPhone|iPad|iPod/.test(ua)||(/Macintosh
 ids.forEach(id=>document.getElementById(id).classList.toggle('on',!mine||id===mine));
 document.getElementById('all').onclick=e=>{ids.forEach(id=>document.getElementById(id).classList.add('on'));e.target.hidden=true};
 fetch('/api/info').then(r=>r.json()).then(i=>{
+  if(i.remote){ids.forEach(id=>document.getElementById(id).classList.remove('on'));document.getElementById('remote').classList.add('on');document.getElementById('all').hidden=true;return}
   if(i.pair_code)document.querySelectorAll('.pcode').forEach(e=>e.textContent=i.pair_code);
   if(i.computer)document.getElementById('who').textContent='Private AI running on '+i.computer;
   if(!(i.apps||[]).includes('/download/android')){document.getElementById('apk').hidden=true;document.getElementById('noapk').hidden=false}

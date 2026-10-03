@@ -388,6 +388,7 @@ renderList();if(last)openChat(last);else render();
 loadList();status();setInterval(status,60000);fetch('/api/warm').catch(()=>{});
 if(N&&N.pendingText){const t=N.pendingText();if(t)window.slShare(t)}
 if(!touch)input.focus();
+fetch('/api/info').then(r=>r.json()).then(i=>{if(i.guest)$('#toolsLink').hidden=true}).catch(()=>{});
 </script>
 </body>
 </html>

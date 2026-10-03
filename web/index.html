@@ -174,6 +174,11 @@ pre{background:var(--code);border-radius:14px}
     <p class="muted">Everything still runs on this Mac; other devices only send questions to it. Each device must be paired once with the code below. Turning this on or off restarts the server (about 5 s).</p>
     <div id="devOut"></div>
   </div>
+  <div class="card">
+    <label class="switch"><input type="checkbox" id="shareOn"> <b>Share with someone far away</b></label>
+    <p class="muted">Gives this Mac a private internet address through Cloudflare (free, no account, nothing to set up on your router). Only people you invite get in. Each person gets their own one-time link and can only chat, with their own chat list; they never see your files, notes, house rules, chats or the pairing code. This Mac must stay on and awake while you share.</p>
+    <div id="shareOut"></div>
+  </div>
 </section>
 
 <section id="prompts">
@@ -328,6 +333,41 @@ $('#lanOn').onchange=async e=>{const on=e.target.checked;if(!confirm(on?'Allow d
   await api('/api/devices',{lan_access:on}).catch(()=>{});$('#devOut').innerHTML='<p>Restarting…</p>';
   for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,2000));try{await api('/api/status');break}catch(e){}}loadDevices()};
 loadDevices();
+
+// share with someone far away (invite links)
+const ago=t=>{if(!t)return'';const m=Math.round((Date.now()/1000-t)/60);return m<2?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+let shareTimer=null;
+async function loadShare(link){let d;try{d=await api('/api/share')}catch(e){return}
+  $('#shareOn').checked=d.on;clearTimeout(shareTimer);
+  if(!d.on){$('#shareOut').innerHTML='<p class="muted">Off.</p>';return}
+  if(d.state!=='on'){$('#shareOut').innerHTML=d.state==='error'?`<p class="lose">${esc(d.error)}</p><button class="btn" id="shareRetry">Try again</button>`:
+      `<p>${d.state==='downloading'?'Downloading Cloudflare’s connector (about 40 MB, once)…':'Getting a private address…'}</p>`;
+    if($('#shareRetry'))$('#shareRetry').onclick=async()=>{await api('/api/share',{on:true});loadShare()};
+    shareTimer=setTimeout(loadShare,2000);return}
+  const rows=d.guests.map(g=>`<tr><td><b>${esc(g.name)}</b></td><td class="muted">${g.expired?'link expired':g.pending&&!g.joined?'invited '+ago(g.created)+', not opened yet':g.pending?'new link sent '+ago(g.created):'joined · last seen '+ago(g.last_seen)}</td>
+    <td style="white-space:nowrap"><button class="btn" data-renew="${g.id}">New link</button> <button class="btn" data-remove="${g.id}">Remove</button></td></tr>`).join('');
+  $('#shareOut').innerHTML=`<p class="muted">Address: <code>${esc(d.url)}</code></p>
+    <label>Invite someone</label>
+    <div class="flex"><input id="invName" placeholder="Their name (e.g. Riya)" maxlength="40" style="flex:1;min-width:0"><button class="btn" id="invGo">Create invite link</button></div>
+    <div id="invOut"></div>
+    ${rows?`<label>People you invited</label><table style="width:100%">${rows}</table>`:''}
+    <p class="muted">Send the link by WhatsApp, iMessage or email. It works once, on the first device that opens it, within 7 days. If your Mac restarts or you turn sharing off and on, the address changes: tap <b>New link</b> and send it again. Their chats are kept.</p>`;
+  const showLink=(l,name)=>{$('#invOut').innerHTML=`<div class="card" style="margin:10px 0"><p><b>Invite link for ${esc(name)}</b> (works once)</p>
+      <div class="row"><div id="invQr" style="flex:0 0 auto;min-width:0;background:#fff;padding:8px;border-radius:12px;display:inline-block;line-height:0"></div>
+      <div style="min-width:0"><code style="word-break:break-all">${esc(l)}</code>
+      <div class="flex" style="margin-top:8px"><button class="btn" id="invCopy">Copy link</button>${navigator.share?'<button class="btn" id="invShare">Share…</button>':''}</div></div></div></div>`;
+    try{const q=qrcode(0,'M');q.addData(l);q.make();$('#invQr').innerHTML=q.createSvgTag({cellSize:3,margin:0})}catch(e){$('#invQr').hidden=true}
+    $('#invCopy').onclick=e=>{navigator.clipboard.writeText(l);e.target.textContent='Copied'};
+    if($('#invShare'))$('#invShare').onclick=()=>navigator.share({title:'Source Linga invite',text:'You’re invited to use my private AI. Open this link:',url:l}).catch(()=>{})};
+  if(link)showLink(link.url,link.name);
+  $('#invGo').onclick=async()=>{const name=$('#invName').value.trim()||'Guest';const r=await api('/api/share',{invite:name});loadShare({url:r.link,name})};
+  $$('[data-renew]').forEach(b=>b.onclick=async()=>{const g=d.guests.find(x=>x.id===b.dataset.renew);const r=await api('/api/share',{renew:g.id});loadShare({url:r.link,name:g.name})});
+  $$('[data-remove]').forEach(b=>b.onclick=async()=>{const g=d.guests.find(x=>x.id===b.dataset.remove);
+    if(!confirm('Remove '+g.name+'? Their link stops working at once and their chats are deleted.'))return;await api('/api/share',{remove:g.id});loadShare()})}
+$('#shareOn').onchange=async e=>{const on=e.target.checked;
+  if(!confirm(on?'Share Source Linga over the internet with people you invite? This Mac gets a private Cloudflare address and stays awake while sharing is on.':'Stop sharing? Invited people lose access until you turn it on again and send new links.')){e.target.checked=!on;return}
+  await api('/api/share',{on}).catch(()=>{});loadShare()};
+loadShare();
 
 // updates
 $('#uDue').onclick=async()=>{const {job}=await api('/api/update',{force:false});await poll(job,$('#uLog'),loadStatus)};
