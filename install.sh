@@ -7,6 +7,7 @@ HERE="$(pwd)"
 [ -f config.json ] || cp config.example.json config.json
 [ -f house-rules.md ] || cp house-rules.example.md house-rules.md
 mkdir -p data outputs local/workflows local/skills
+chmod +x install.sh restart.sh uninstall.sh 2>/dev/null || true  # GitHub web uploads drop the executable bit
 MODEL=$(python3 -c "import json;print(json.load(open('config.json'))['model'])")
 EMBED=$(python3 -c "import json;print(json.load(open('config.json'))['embed_model'])")
 

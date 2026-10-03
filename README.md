@@ -28,14 +28,14 @@ What makes it different from a plain local chatbot:
 git clone https://github.com/sourcelinga/source-linga.git
 ```
 ```bash
-cd source-linga && ./install.sh
+cd source-linga && bash install.sh
 ```
 
 The installer downloads Ollama (if missing) and the models (`qwen3.5:9b`, ~6.6 GB, and `nomic-embed-text`), then installs a small background service (`~/Applications/Forge.app`) that starts at login. If macOS asks whether it may read your Documents folder, click **Allow**.
 
 Then open **http://127.0.0.1:8777**.
 
-To stop and remove the service later: `./uninstall.sh` (your models and data stay).
+To stop and remove the service later: `bash uninstall.sh` (your models and data stay).
 
 ## Make it yours (5 minutes)
 
@@ -115,7 +115,7 @@ The tests (`evals/cases.json` + your `evals/local-cases.json`) are deterministic
 ## Commands
 
 ```bash
-./restart.sh
+bash restart.sh
 ```
 ```bash
 python3 -m forge.updater --force
