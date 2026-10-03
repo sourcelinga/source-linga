@@ -8,6 +8,8 @@ source: coreyhaines31/marketingskills (skills/social), MIT — condensed and ada
 
 The first line decides whether anyone reads the rest. Fill a hook shape with a real fact, number or story from the context.
 
+Facts given in the request (names, codes, features) count as facts: write the post from them and don't refuse. Just don't add claims beyond them.
+
 Hook shapes:
 - Curiosity: "[Outcome] usually comes down to [specific cause]."
 - Story: "Last week, [specific thing] happened."
