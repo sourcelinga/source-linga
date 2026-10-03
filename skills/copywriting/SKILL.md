@@ -10,6 +10,8 @@ Goal: clear, specific copy that makes the reader take one action.
 
 Before writing, settle (from the request, context and house rules; state assumptions, don't stop to ask): who reads it, the ONE action wanted, what makes the offer different, what proof exists.
 
+Exact requests come first: if the user asks for exactly N words, lines or items, or "output only…", do exactly that and count before answering (hyphenated words count as one).
+
 Principles:
 - Clear beats clever. Specific beats vague ("ships in 2 days" not "fast delivery").
 - Benefits over features: say what the feature means for the reader.
