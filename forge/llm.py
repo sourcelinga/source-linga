@@ -90,7 +90,7 @@ class Ollama:
                     raise OllamaError("pull %s: %s" % (model, ev["error"]))
                 if say and ev.get("total") and ev.get("completed"):
                     pct = int(100 * ev["completed"] / ev["total"])
-                    if pct >= last + 10:
+                    if pct >= last + 2:
                         last = pct
                         say("pull %s: %d%% of %.1f GB" % (model, pct, ev["total"] / 1e9))
                 elif say and ev.get("status") and "pulling" not in ev["status"]:

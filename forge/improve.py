@@ -50,11 +50,13 @@ def load_strategies():
 
 
 def house_rules():
+    """Your facts and forbidden claims. An untouched template (headings and comments only) counts as none."""
     try:
         with open(os.path.join(ROOT, "house-rules.md")) as f:
-            return f.read()
+            text = re.sub(r"<!--.*?-->", "", f.read(), flags=re.S).strip()
     except OSError:
         return ""
+    return text if any(l.lstrip().startswith(("-", "*")) for l in text.splitlines()) else ""
 
 
 def strategy_stats():
