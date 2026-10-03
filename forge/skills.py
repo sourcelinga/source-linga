@@ -13,6 +13,9 @@ from .common import ROOT
 SKILLS_DIR = os.path.join(ROOT, "skills")
 LOCAL_SKILLS_DIR = os.path.join(ROOT, "local", "skills")
 _cache = {"key": None, "skills": []}
+# Tightly specified outputs ("exactly 8 words", "exactly 6 hashtags"): measured on the eval suite, a skill card
+# only distracts a 9B model from counting, so these requests get no card.
+STRICT = re.compile(r"\bexactly\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b", re.I)
 _lock = threading.Lock()
 
 
@@ -87,7 +90,7 @@ def rank(text, llm, cfg):
 
 def match(text, llm, cfg):
     """The best skill for this request, or None when nothing fits well enough."""
-    if not cfg.get("skills_enabled", True):
+    if not cfg.get("skills_enabled", True) or STRICT.search(text):
         return None
     try:
         ranked = rank(text, llm, cfg)
@@ -103,7 +106,8 @@ def match(text, llm, cfg):
 
 
 def block(skill):
-    return "SKILL TO APPLY (%s):\n%s" % (skill["name"], skill["body"])
+    return ("SKILL TO APPLY (%s). The user's exact format, length and 'output only' instructions override it.\n%s"
+            % (skill["name"], skill["body"]))
 
 
 def listing():
