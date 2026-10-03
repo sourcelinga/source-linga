@@ -10,7 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Source Linga">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#f3f5ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07080d" media="(prefers-color-scheme: dark)">
 <style>
 :root{--bg:#f6f5f2;--panel:#fff;--ink:#1d1d1b;--mute:#6b6a66;--line:#e3e1dc;--accent:#2f6b4f;--accent-ink:#fff;--warn:#a5481d;--good:#2f6b4f;--code:#f1efea;--chip:#ecebe6}
 @media (prefers-color-scheme:dark){:root{--bg:#151614;--panel:#1d1f1c;--ink:#ecebe6;--mute:#9a9992;--line:#2e302c;--accent:#6fbf93;--accent-ink:#0f1a14;--warn:#e08a5f;--good:#6fbf93;--code:#232521;--chip:#2a2c28}}
@@ -66,6 +67,27 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
   main{padding:12px 12px 24px}#chat .card.input{position:sticky;bottom:0;margin-bottom:0;padding-bottom:max(12px,env(safe-area-inset-bottom));border-radius:12px 12px 0 0}
   #chatIn{font-size:16px!important}}
 @media (pointer:coarse){#chatInfo{display:none}}
+
+/* Liquid Glass */
+:root{--bg:#f3f5ff;--panel:rgba(255,255,255,.55);--ink:#12131a;--mute:#6d7186;--line:rgba(255,255,255,.8);--accent:#5566ff;--accent2:#9b5cff;--accent-ink:#fff;--warn:#d6493a;--good:#21a86a;--code:rgba(255,255,255,.55);--chip:rgba(85,102,255,.11);
+  --rim:rgba(255,255,255,.9);--shadow:0 10px 40px rgba(40,50,120,.13);--b1:rgba(85,102,255,.42);--b2:rgba(155,92,255,.32);--b3:rgba(40,210,210,.26);--blur:saturate(1.8) blur(22px)}
+@media (prefers-color-scheme:dark){:root{--bg:#07080d;--panel:rgba(30,32,48,.5);--ink:#f1f2f7;--mute:#8c90a3;--line:rgba(255,255,255,.12);--accent:#6f7dff;--accent-ink:#fff;--warn:#ff7d6b;--good:#4fe0a0;--code:rgba(0,0,0,.35);--chip:rgba(120,135,255,.16);
+  --rim:rgba(255,255,255,.25);--shadow:0 14px 50px rgba(0,0,0,.55);--b1:rgba(85,102,255,.55);--b2:rgba(155,92,255,.42)}}
+html{background:var(--bg)}
+body{background:transparent}
+body::before{content:"";position:fixed;inset:-10%;z-index:-1;pointer-events:none;background:radial-gradient(40% 45% at 10% 5%,var(--b1),transparent 70%),radial-gradient(40% 45% at 95% 30%,var(--b2),transparent 70%),radial-gradient(45% 45% at 35% 105%,var(--b3),transparent 70%)}
+.card,header{background:var(--panel);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--line);box-shadow:inset 1px 1px 0 var(--rim),var(--shadow)}
+.card{border-radius:24px}
+header{margin:10px;border-radius:24px;top:10px}
+.card{border-radius:20px}
+nav button{border-radius:99px}nav button.on{background:var(--panel);box-shadow:inset 1px 1px 0 var(--rim),0 2px 8px rgba(0,0,0,.08)}
+input,textarea,select{background:var(--chip);border-color:transparent;border-radius:12px}
+button.primary,button.btn{border-radius:99px}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 4px 14px rgba(85,102,255,.3)}
+button.btn{background:var(--panel)}
+pre{background:var(--code);border-radius:14px}
+.msg{border-radius:18px;background:var(--panel)}.msg.user{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.list{border-radius:14px;border-color:var(--line)}
 </style>
 </head>
 <body>
