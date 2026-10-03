@@ -70,7 +70,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 </head>
 <body>
 <header>
-  <h1><img src="/logo-64.png" alt="">Source Linga</h1>
+  <h1><img src="/logo-64.png" alt="">Source Linga</h1><a href="/app" class="muted" style="text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px">Open chat app →</a>
   <span id="status"><span class="dot"></span>connecting…</span>
   <nav id="nav">
     <button data-t="chat" class="on">Chat</button>
@@ -159,6 +159,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;p
 </section>
 
 </main>
+<script src="/qr.js"></script>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -280,11 +281,15 @@ $('#kRe').onclick=()=>upd(['knowledge'],$('#kLog'));$('#kLes').onclick=()=>upd([
 async function loadDevices(){let d;try{d=await api('/api/devices')}catch(e){return}
   $('#navDevices').hidden=false;$('#lanOn').checked=d.lan_access;
   if(!d.listening_on_lan){$('#devOut').innerHTML=d.lan_access?'<p>Restarting…</p>':'<p class="muted">Off: only this Mac can use Source Linga.</p>';return}
-  const u=d.urls[0]||'';
-  $('#devOut').innerHTML=`<div class="row"><div><label>Address on your Wi-Fi</label>${d.urls.map(x=>`<div><code>${esc(x)}</code></div>`).join('')}</div>
-    <div><label>Pairing code</label><div class="big">${esc(d.pair_code)}</div></div></div>
-   <label>iPhone / iPad</label><ol class="steps"><li>Connect to the same Wi-Fi as this Mac.</li><li>Open Safari and go to <code>${esc(u)}</code>.</li><li>Type the pairing code.</li><li>Tap Share → <b>Add to Home Screen</b>. It now opens like an app.</li></ol>
-   <label>Another Mac</label><ol class="steps"><li>Open <code>${esc(u)}</code> in Safari and type the code.</li><li>File → <b>Add to Dock</b>.</li></ol>
+  const u=d.urls[0]||'',ip=d.urls[1]||u,has=a=>(d.apps||[]).includes(a);
+  $('#devOut').innerHTML=`<div class="row"><div style="flex:0 0 auto;min-width:0"><div id="qr" style="background:#fff;padding:10px;border-radius:12px;display:inline-block;line-height:0"></div>
+      <div class="muted" style="text-align:center">Scan with the phone's camera</div></div>
+    <div><label>Pairing code</label><div class="big">${esc(d.pair_code)}</div>
+      <label>Address on your Wi-Fi</label>${d.urls.map(x=>`<div><code>${esc(x)}</code></div>`).join('')}
+      <p class="muted">The phone apps find this Mac by themselves; the address is only needed if they don't.</p></div></div>
+   <label>iPhone / iPad</label><ol class="steps"><li>Same Wi-Fi as this Mac. Scan the code above with the Camera (or open <code>${esc(u)}/get</code> in Safari).</li><li>Tap <b>pair</b> and type the pairing code.</li><li>Tap Share → <b>Add to Home Screen</b>. It now opens full screen like an app.</li></ol>
+   <label>Android</label><ol class="steps"><li>Scan the code above (or open <code>${esc(ip)}/get</code> in Chrome) and tap <b>Download the Android app</b>${has('/download/android')?'':' <span class="lose">(not built yet: run <code>bash apps/android/build.sh</code>)</span>'}.</li><li>Open the downloaded file, allow installing from your browser if asked, tap <b>Install</b>.</li><li>Open Source Linga, tap this Mac, type the pairing code.</li></ol>
+   <label>Another Mac</label><ol class="steps"><li>Open <code>${esc(u)}/get</code> on it and download the Mac app${has('/download/mac')?'':' <span class="lose">(not built yet: run <code>bash apps/mac/build.sh</code>)</span>'}.</li><li>In the app: Settings → <b>Connect to the AI on another Mac</b>, pick this Mac, type the code.</li></ol>
    <label>Native apps (Enchanted on iPhone/iPad/Mac, or any OpenAI-compatible app)</label>
    <ol class="steps"><li>Enchanted → Settings → Ollama server URI: <code>${esc(u)}/ollama</code>, Bearer token: the app key below. Pick the model <b>source-linga</b>.</li>
    <li>OpenAI-compatible apps: base URL <code>${esc(u)}/v1</code>, API key: the app key, model <code>source-linga</code>.</li></ol>
@@ -292,6 +297,7 @@ async function loadDevices(){let d;try{d=await api('/api/devices')}catch(e){retu
    <li><b>Get Dictionary Value</b> <code>choices.1.message.content</code> → <b>Speak Text</b> or <b>Show Result</b>. Then say “Hey Siri, Ask Source Linga”.</li></ol>
    <div class="flex"><button class="btn" id="showKey">Show app key</button><code id="keyOut" hidden>${esc(d.device_key)}</code><button class="btn" id="copyKey" hidden>Copy</button>
    <button class="btn" id="newKey">New key (un-pairs every device)</button></div>`;
+  try{const q=qrcode(0,'M');q.addData(ip+'/get');q.make();$('#qr').innerHTML=q.createSvgTag({cellSize:4,margin:0})}catch(e){$('#qr').hidden=true}
   $('#showKey').onclick=()=>{$('#keyOut').hidden=false;$('#copyKey').hidden=false;$('#showKey').hidden=true};
   $('#copyKey').onclick=e=>{navigator.clipboard.writeText(d.device_key);e.target.textContent='Copied'};
   $('#newKey').onclick=async()=>{if(!confirm('Make a new key and pairing code? Every paired iPhone, iPad and app must pair again.'))return;await api('/api/devices',{new_key:true});loadDevices()}}
