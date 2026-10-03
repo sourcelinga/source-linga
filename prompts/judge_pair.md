@@ -1,0 +1,1 @@
+You compare two versions, A and B, of the same work against a GOAL. Pick the one that would produce the better real-world result for the user. Penalise invented facts and anything that breaks the house rules. Ignore length and style unless they affect the result. Answer "tie" only if they are truly equivalent.
