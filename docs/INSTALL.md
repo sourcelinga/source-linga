@@ -1,126 +1,120 @@
-# Install Source Linga on every device
+# Install Source Linga: step by step
 
-Source Linga's AI runs on **one Mac**, the "AI Mac". Your other devices use that Mac's AI over Wi-Fi:
+No Terminal, no code, no account and no sign-in. You download one app, open it and click **Set up**.
 
-| Device | App | Needs |
+Source Linga's AI runs on **one Mac**, your "AI Mac". Your iPhone, iPad, Android phone and other Macs use that Mac's AI over your home Wi-Fi.
+
+| Device | What you install | Needs |
 |---|---|---|
-| **AI Mac** | Engine + native Mac app | Apple silicon (M1 or newer), macOS 14 Sonoma or newer, 16 GB RAM recommended, ~10 GB free |
-| **iPhone / iPad** | Home Screen app (native app optional) | iOS / iPadOS 17 or newer, same Wi-Fi as the AI Mac |
-| **Android phone / tablet** | Native app (APK) | Android 8.0 or newer, same Wi-Fi as the AI Mac |
-| **Other Macs** | Native Mac app | macOS 14 or newer (Intel or Apple silicon), same Wi-Fi |
-
-Chats are saved on the AI Mac and show up on every device you pair.
-
-Downloads for the latest version are on the [Releases page](https://github.com/sourcelinga/source-linga/releases/latest).
+| **AI Mac** | The Source Linga app (it sets everything up itself) | Apple silicon (M1 or newer), macOS 14 Sonoma or newer, 8 GB memory (16 GB recommended), about 12 GB free |
+| **iPhone / iPad** | Nothing from the App Store: a Home Screen app, added from Safari | iOS / iPadOS 17 or newer, same Wi-Fi |
+| **Android** | The Source Linga app (APK, 0.2 MB) | Android 8.0 or newer, same Wi-Fi |
+| **Other Macs** | The same Source Linga app | macOS 14 or newer, same Wi-Fi |
 
 ---
 
-## 1. The AI Mac (do this first)
+## Step 1: Download the Mac app
 
-1. Open **Terminal** (press ⌘Space, type *Terminal*, press Return).
-2. If you have never used developer tools on this Mac, install Apple's free Command Line Tools and click **Install** in the window that opens:
-   ```bash
-   xcode-select --install
-   ```
-3. Download Source Linga:
-   ```bash
-   git clone https://github.com/sourcelinga/source-linga.git ~/source-linga
-   ```
-4. Run the installer. It takes 10–30 minutes, mostly to download the AI model (~7 GB):
-   ```bash
-   cd ~/source-linga && bash install.sh
-   ```
-   - The installer sets up Ollama, the models, a background service that starts at login, and the **Source Linga** Mac app.
-   - If macOS asks whether *Forge* may access your Documents folder, click **Allow**.
-5. Open **Source Linga** from Launchpad, Spotlight (⌘Space, type *Source Linga*) or `~/Applications`, then drag its Dock icon where you want it.
+1. Open the **[latest release](https://github.com/sourcelinga/source-linga/releases/latest)**.
+2. Under **Assets**, click **SourceLinga.dmg**. It is about 3 MB.
+3. Open your **Downloads** folder and double-click **SourceLinga.dmg**.
+4. In the window that opens, **drag the Source Linga icon onto the Applications folder**.
+5. Close the window, then eject the disk image (click ⏏ next to *Source Linga* in a Finder sidebar).
 
-**Using the Mac app**
+## Step 2: Open it the first time
 
-- **Chat:** your chats are listed on the left. Press **⌘N** for a new chat, **Return** to send, **⌘.** to stop an answer, **⌘R** to try again.
-- **⌥Space** from any app brings Source Linga to the front, ready to type. You can switch this off in Settings.
-- **Menu bar:** the capsule icon in the menu bar opens a quick-ask box for one-off questions.
-- **Tools:** the 🛠 button at the bottom of the chat list opens Improve, Workflows, Knowledge, Updates and Devices.
-- **Answer buttons:** under each answer you can copy it, have it read aloud, share it, try again, or edit your question.
+Source Linga is free and open source, but it isn't sold through Apple, so the first time macOS asks you to confirm.
 
-> No Mac app? The same chat also runs in any browser at <http://127.0.0.1:8777/app>.
+1. Open **Applications** and double-click **Source Linga**.
+2. macOS says *"Source Linga" Not Opened*. Click **Done**. (Don't click *Move to Bin*.)
+3. Open  **Apple menu → System Settings → Privacy & Security**.
+4. Scroll down to **Security**. Next to *"Source Linga" was blocked…*, click **Open Anyway**.
+5. Type your Mac password (or use Touch ID), then click **Open Anyway** once more.
 
-### Turn on access for your other devices
+You only do this once. After that, Source Linga opens like any other app.
 
-1. In the Mac app, click **🛠 Tools → Devices**.
-2. Tick **Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga**. The engine restarts in about 5 seconds.
-3. The page now shows a **QR code**, a **6-digit pairing code** and the Mac's **Wi-Fi address**. Keep it open while you set up your other devices.
+## Step 3: Click "Set up on this Mac"
+
+The app opens on a welcome screen that checks your Mac (memory, chip and free space) and shows what it will download.
+
+1. Click **Set up on this Mac**.
+2. If macOS shows a window asking to install the **command line developer tools**, click **Install**, then **Agree**. This is Apple's free toolkit and provides the Python that Source Linga runs on. It takes 5–15 minutes. Source Linga waits and carries on by itself when it's done.
+3. Source Linga now does the rest. You see each step tick off:
+   - **Ollama, the AI runtime** (about 200 MB)
+   - **The AI model**: `qwen3.5:9b` (about 7 GB) on Macs with 16 GB of memory or more, or the lighter `qwen3.5:4b` (about 3.7 GB) on 8 GB Macs. A progress bar shows the download. You can keep using your Mac.
+   - **Background service**, so the AI is ready whenever you open the app
+4. If macOS asks whether *Forge* may access your Documents folder, click **Allow**. If it says a **background item was added**, that's Source Linga's service. Leave it on.
+5. When you see **Ready**, click **Start chatting**.
+
+That's all. Everything now works **offline**, and nothing you type leaves your Mac.
+
+> **Something went wrong?** Click **Try again**. Setup picks up where it stopped and doesn't download anything twice. **Show details** shows what happened, and **Copy details** copies it so you can paste it into an [issue](https://github.com/sourcelinga/source-linga/issues).
+
+### Using Source Linga on the Mac
+
+- **Chat:** your chats are on the left. **⌘N** starts a new chat, **Return** sends, **⌘.** stops an answer, **⌘R** tries again.
+- **⌥Space** brings Source Linga forward from any app. You can turn this off in **Settings (⌘,)**.
+- **Menu bar:** the capsule icon at the top of the screen opens a quick-ask box.
+- **Answer buttons:** copy, read aloud, share, try again, edit your question.
+- **Tools** (🛠 at the bottom of the chat list): *Improve* any prompt, email or document, one-click *Workflows*, *Knowledge*, *Updates* and *Devices*.
+
+---
+
+## Step 4 (optional): Your iPhone and iPad
+
+### First, on the Mac
+1. In Source Linga, click **🛠 Tools → Devices**.
+2. Tick **Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga**.
+3. A **QR code** and a **6-digit pairing code** appear. Keep this window open.
 4. If macOS asks whether *Python* may accept incoming network connections, click **Allow**.
 
----
+### Then, on the iPhone or iPad
+1. Make sure it's on the **same Wi-Fi** as the Mac.
+2. Open the **Camera** and point it at the QR code. Tap the link that appears.
+3. Type the **6-digit code**, then tap **Pair**.
+4. Tap **Share** (the square with an arrow) → **Add to Home Screen** → **Add**.
+5. Open **Source Linga** from your Home Screen. It opens full screen, like any app.
 
-## 2. iPhone and iPad
-
-### The Home Screen app (no developer account needed)
-
-1. Connect the iPhone to the **same Wi-Fi** as the AI Mac.
-2. Open the **Camera** app and point it at the QR code in **Tools → Devices** on the Mac. Tap the yellow link.
-   - *Or* open **Safari** and type the address shown on the Mac, followed by `/get`, for example `http://your-mac.local:8777/get`.
-3. Tap **pair**, type the **6-digit code** shown on the Mac, then tap **Pair**.
-4. Tap the **Share** button (the square with the arrow), scroll down, tap **Add to Home Screen**, then **Add**.
-5. Open **Source Linga** from your Home Screen. It runs full screen like any other app, with your chat list, copy, read-aloud, try-again and edit buttons.
-
-> Use **Safari** for steps 2–4. Other browsers on iPhone can't add a full-screen app to the Home Screen.
-
-### The native iPhone app (optional, needs Xcode)
-
-The repository also contains a native SwiftUI app for iPhone and iPad in `apps/apple/SourceLinga.swiftpm`. It adds automatic discovery of the Mac, Keychain storage of the key and native sharing. Apple only lets you install your own apps through Xcode:
-
-1. On a Mac, install **Xcode** from the App Store (free, about 8 GB) and open it once.
-2. In Finder, open `source-linga/apps/apple/` and double-click **SourceLinga.swiftpm**. Xcode opens it.
-3. **Xcode → Settings → Accounts →** click **+** and sign in with your Apple ID. A free account is enough.
-4. Plug the iPhone in with a cable and tap **Trust** on the phone. If asked, turn on **Settings → Privacy & Security → Developer Mode** on the iPhone and restart it.
-5. In Xcode's toolbar, pick your iPhone as the destination. In the project's **Signing & Capabilities**, choose your Apple ID team.
-6. Press **▶ Run**. The first time, go to **Settings → General → VPN & Device Management** on the iPhone and trust your Apple ID.
-7. Open the app, tap your Mac in the list, then type the pairing code.
-
-With a free Apple ID the app stops opening after 7 days; press **▶ Run** again in Xcode to renew it. A paid Apple Developer account removes this limit.
-
-On an iPad you can also open `SourceLinga.swiftpm` in Apple's free **Swift Playgrounds** app and press **Run**.
+> Use **Safari** for steps 2–4. Other iPhone browsers can't add a full-screen app to the Home Screen.
 
 ---
 
-## 3. Android
+## Step 5 (optional): Your Android phone
 
-1. Connect the phone to the **same Wi-Fi** as the AI Mac.
-2. Scan the QR code in **Tools → Devices** on the Mac with the camera or Google Lens, and open the link in **Chrome**.
-   - *Or* type the address shown on the Mac followed by `/get` into Chrome, for example `http://192.168.1.20:8777/get`.
-   - *Or* download **SourceLinga.apk** from the [Releases page](https://github.com/sourcelinga/source-linga/releases/latest).
-3. Tap **Download the Android app**. When it finishes, tap **Open** in the notification, or find **SourceLinga.apk** in **Files → Downloads**.
-4. Android may say the browser isn't allowed to install apps. Tap **Settings**, turn on **Allow from this source**, then go back.
-5. Tap **Install**. If Google Play Protect asks about an unknown app, tap **More details → Install anyway**. The app isn't on the Play Store; it's the open-source app from this repository.
-6. Open **Source Linga**. Under *Macs on this Wi-Fi*, tap your Mac, then type the **6-digit code**. That's it.
-   - If your Mac isn't listed after a few seconds, type the address shown on the Mac (for example `192.168.1.20`) and tap **Next**.
+1. Turn on device access on the Mac (see *First, on the Mac* above).
+2. On the phone, scan the QR code with the **Camera** or **Google Lens** and open the link in **Chrome**. *Or* download **SourceLinga.apk** from the [latest release](https://github.com/sourcelinga/source-linga/releases/latest).
+3. Tap **Download the Android app**, then **Open** when it finishes.
+4. If Android says Chrome isn't allowed to install apps: tap **Settings**, turn on **Allow from this source**, then go back.
+5. Tap **Install**. If Play Protect asks, tap **More details → Install anyway** (the app isn't on the Play Store).
+6. Open **Source Linga**, tap your Mac in the list and type the **6-digit code**.
 
-What the Android app adds:
-- **Share to Source Linga:** in any app, select text or tap **Share → Source Linga** to start a chat with it.
-- **New chat shortcut:** long-press the app icon for a *New chat* shortcut.
-- **Phone features:** copy, share, read aloud and haptics.
-- **Change Mac:** use *Change Mac / settings* in the side menu.
+Extras: **Share → Source Linga** from any app starts a chat with the shared text, and a long press on the icon gives a **New chat** shortcut.
 
 ---
 
-## 4. Another Mac
+## Another Mac in the house
 
-1. On the other Mac, open the AI Mac's address followed by `/get` in Safari, for example `http://your-mac.local:8777/get`, and click **Download the Mac app**. You can also download **SourceLinga-mac.zip** from the [Releases page](https://github.com/sourcelinga/source-linga/releases/latest).
-2. Double-click the zip, then drag **Source Linga** into **Applications**.
-3. Open it. The app isn't notarized by Apple, so the first time macOS says it can't verify it:
-   - Click **Done**, then open **System Settings → Privacy & Security**.
-   - Scroll down to the message about Source Linga and click **Open Anyway**. Enter your password if asked.
-4. The app opens on **Connect to your Mac**. Click the AI Mac in the list (or type its address), then type the pairing code. If macOS asks whether Source Linga may find devices on your local network, click **Allow**.
-   - Later you can switch Macs in **Source Linga → Settings… (⌘,)**.
-
-> If you build the app yourself with `bash apps/mac/build.sh --install`, macOS trusts it right away and step 3 isn't needed.
+1. Do **Step 1** and **Step 2** on the other Mac.
+2. On the welcome screen, click **Use the AI on another Mac**.
+3. Click your AI Mac in the list and type the **6-digit code** from its **Tools → Devices**.
 
 ---
 
-## 5. Away from home (optional)
+## Away from home (optional)
 
-Pairing works on your home Wi-Fi. To reach the AI Mac from anywhere, install the free **[Tailscale](https://tailscale.com)** on the AI Mac and on your phone, and sign in to both with the same account. In the phone app, use **Change Mac**, then type the Mac's Tailscale IP address (it starts with `100.`). Everything stays encrypted, and the AI still runs only on your Mac.
+Install the free **[Tailscale](https://tailscale.com)** app on the AI Mac and on your phone, and sign in to both with the same account. In the phone app, use **Change Mac** and type the Mac's Tailscale address (it starts with `100.`). Your chats stay encrypted, and the AI still runs only on your Mac.
+
+---
+
+## Updating
+
+Download the newest **SourceLinga.dmg** and drag the app into Applications again (choose **Replace**). Open it and, if it asks, click **Set up on this Mac**. Setup keeps your chats, settings and models, so it only takes a minute. The AI model updates itself: once a week Source Linga tests one newer model and switches only if it scores better.
+
+## Uninstalling
+
+1. Open Source Linga → **Settings (⌘,)** → **Remove the AI engine from this Mac…** → **Remove**.
+2. Drag **Source Linga** from Applications to the Bin.
+3. Optional, to free the disk space: drag **Ollama** from Applications to the Bin, and delete the folder **~/.ollama** (in Finder: **Go → Go to Folder…**, type `~/.ollama`).
 
 ---
 
@@ -128,24 +122,26 @@ Pairing works on your home Wi-Fi. To reach the AI Mac from anywhere, install the
 
 | Problem | Fix |
 |---|---|
-| Phone says *Can't reach your Mac* | Check that the Mac is awake (not asleep with the lid closed), that the phone is on the same Wi-Fi rather than mobile data, and that **Tools → Devices** access is on. |
-| The Mac isn't in the phone's list | Type the address shown in **Tools → Devices** instead. Some routers block device discovery ("AP/client isolation"); guest Wi-Fi networks usually do. |
-| *Wrong code* | Codes are 6 digits and stay the same until you press **New key**. After 5 wrong tries, wait 10 minutes. |
-| The app asks to pair again | Someone pressed **New key** on the Mac, which un-pairs every device. Pair again with the new code. |
-| Mac app: *Apple could not verify…* | See step 3 of *Another Mac*, or run `xattr -dr com.apple.quarantine "/Applications/Source Linga.app"`. |
-| The first answer is slow | The model is loading (about 10–20 s). Later answers start in 2–8 s. |
-| The AI engine is off | In the Mac app, click **Start engine**, or run `bash restart.sh` in the source-linga folder. |
+| *"Source Linga" Not Opened* / *Apple could not verify…* | Do **Step 2**: System Settings → Privacy & Security → **Open Anyway**. |
+| Setup waits at **Apple developer tools** | Look for the macOS *Install* window (it may be behind other windows). If you closed it, click **I've installed them**, and setup asks again. |
+| The model download is slow or stops | Click **Try again**. Downloads continue where they stopped. |
+| *Set up* is greyed out | There isn't enough free disk space. Free up at least 12 GB and reopen the app. |
+| The phone says *Can't reach your Mac* | Check that the Mac is awake, the phone is on the same Wi-Fi (not mobile data), and **Tools → Devices** access is on. |
+| The Mac isn't in the phone's list | Type the address shown in **Tools → Devices**. Guest Wi-Fi networks often block devices from seeing each other. |
+| *Wrong code* | Codes are 6 digits. After 5 wrong tries, wait 10 minutes. |
+| The first answer is slow | The model is loading into memory (10–20 s). Later answers start in a few seconds. |
+| *The AI engine is off* | Click **Start engine** in the banner, or **Settings → Start the AI engine**. |
 
 ---
 
-## Building the apps yourself
+## For developers
 
-- **Mac app:**
-  ```bash
-  bash apps/mac/build.sh --install
-  ```
-  This needs only the Command Line Tools. It builds a universal app (Apple silicon and Intel) into `dist/` and copies it to `~/Applications`.
-- **Android app:** `bash apps/android/build.sh`. See [apps/android/README.md](../apps/android/README.md) for the one-time JDK and SDK setup. It doesn't need Android Studio or Gradle.
-- **iPhone app:** open `apps/apple/SourceLinga.swiftpm` in Xcode (see above).
+Everything above uses the app. If you prefer the source:
 
-Built apps are written to `dist/`, and the Mac serves them to your phones at `/get`.
+```bash
+git clone https://github.com/sourcelinga/source-linga.git && cd source-linga && bash install.sh
+```
+
+- **Mac app:** `bash apps/mac/build.sh --install` (needs only the Command Line Tools; the build carries the engine inside the app).
+- **Android app:** `bash apps/android/build.sh` (see [apps/android/README.md](../apps/android/README.md); no Android Studio or Gradle).
+- **Native iPhone/iPad app:** open `apps/apple/SourceLinga.swiftpm` in Xcode or Swift Playgrounds and press Run (see [apps/apple/README.md](../apps/apple/README.md)).
