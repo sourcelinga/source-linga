@@ -19,6 +19,7 @@ Body:
 3. Output format: what the answer should look like.
 4. Red flags: the excuses or shortcuts that mean the rule is being broken.
 5. One short good-vs-bad example when misunderstanding is likely. Never invent facts for it.
+6. A final "Check before finishing" step: what to verify or review before the work is handed over.
 
 Test it like code: think of a task where an AI without the skill would fail; check that the skill makes it pass, and that it doesn't trigger on unrelated tasks.
 
