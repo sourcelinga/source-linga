@@ -1,0 +1,215 @@
+[
+ {
+  "id": "arithmetic",
+  "prompt": "chat_system",
+  "task": "A cafe buys 3 packs of tea at Rs 285 per pack, plus one Rs 99 sample. What is the total in rupees? Give the number.",
+  "checks": [
+   {
+    "type": "contains_any",
+    "values": [
+     "954"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "python-slugify",
+  "prompt": "chat_system",
+  "task": "Write a Python function slugify(s) that lowercases s, replaces every run of non-alphanumeric characters with a single hyphen, and strips leading/trailing hyphens. Output only the code.",
+  "checks": [
+   {
+    "type": "python_asserts",
+    "asserts": [
+     "slugify('Hello, World!') == 'hello-world'",
+     "slugify('  Acme -- Tools  ') == 'acme-tools'",
+     "slugify('AV2 (100g)') == 'av2-100g'"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "usd-formula",
+  "prompt": "chat_system",
+  "task": "Price formula: take the INR price, multiply by 2.5, then divide by 96. What is the USD price of a Rs 285 item? Round to 2 decimals and give just the number.",
+  "checks": [
+   {
+    "type": "contains_any",
+    "values": [
+     "7.42"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "extract-lots",
+  "prompt": "chat_system",
+  "task": "Extract every lot code from this text and return ONLY a JSON array of strings in order of appearance: 'Shipped EX-118 and CB-204 yesterday; DO-2026-BK-070 is next, then BL-2026-CT-311. Ref INV-2231 is an invoice, not a lot.'",
+  "checks": [
+   {
+    "type": "json_equals",
+    "value": [
+     "EX-118",
+     "CB-204",
+     "DO-2026-BK-070",
+     "BL-2026-CT-311"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "python-parse-lot",
+  "prompt": "chat_system",
+  "task": "Write a Python function parse_lot(code) for lot codes like 'DO-2026-BK-070' (region, year, type, number) and short codes like 'EX-118' (region, number). Return a dict with keys region, year, type, num; year and type are None for short codes; year and num are ints. Output only the code.",
+  "checks": [
+   {
+    "type": "python_asserts",
+    "asserts": [
+     "parse_lot('DO-2026-BK-070') == {'region':'DO','year':2026,'type':'BK','num':70}",
+     "parse_lot('EX-118') == {'region':'EX','year':None,'type':None,'num':118}",
+     "parse_lot('BL-2026-CT-311')['num'] == 311"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "bullets-3",
+  "prompt": "chat_system",
+  "task": "Reply with exactly three bullet points (each starting with '- ') on how to write a clearer email. Nothing else.",
+  "checks": [
+   {
+    "type": "bullet_count",
+    "equals": 3
+   },
+   {
+    "type": "max_words",
+    "value": 90
+   }
+  ]
+ },
+ {
+  "id": "json-only",
+  "prompt": "chat_system",
+  "task": "Return only a JSON object with keys \"city\" and \"country\" for the Eiffel Tower. No other text.",
+  "checks": [
+   {
+    "type": "json_keys",
+    "keys": [
+     "city",
+     "country"
+    ]
+   },
+   {
+    "type": "contains_any",
+    "values": [
+     "paris"
+    ]
+   },
+   {
+    "type": "regex",
+    "pattern": "^\\s*(```(json)?\\s*)?\\{"
+   }
+  ]
+ },
+ {
+  "id": "tagline-8",
+  "prompt": "chat_system",
+  "task": "Write a tagline for a neighbourhood bakery in exactly 8 words. Output only the tagline.",
+  "checks": [
+   {
+    "type": "word_count_equals",
+    "value": 8
+   }
+  ]
+ },
+ {
+  "id": "caption-format",
+  "prompt": "chat_system",
+  "task": "Write an Instagram caption for a handmade soap called Cedar Morning: exactly 3 lines of text, then one final line with exactly 6 hashtags. No emojis. Mention batch code CM-12.",
+  "checks": [
+   {
+    "type": "regex_count",
+    "pattern": "#\\w+",
+    "equals": 6
+   },
+   {
+    "type": "contains_any",
+    "values": [
+     "cm-12"
+    ]
+   },
+   {
+    "type": "no_emoji"
+   }
+  ]
+ },
+ {
+  "id": "no-invented-numbers",
+  "prompt": "chat_system",
+  "task": "Write one sentence for our website stating the lab-tested purity percentage and the average customer rating of our Cedar Morning soap.",
+  "checks": [
+   {
+    "type": "not_regex",
+    "pattern": "\\d+(\\.\\d+)?\\s*%"
+   },
+   {
+    "type": "not_regex",
+    "pattern": "\\b(rated|rating|stars?)\\b[^.]{0,20}\\d|\\d(\\.\\d)?\\s*(/\\s*5|stars?)"
+   }
+  ]
+ },
+ {
+  "id": "no-ai-tells",
+  "prompt": "chat_system",
+  "task": "Write a two-sentence product description for a stainless steel water bottle that keeps drinks cold for 24 hours.",
+  "checks": [
+   {
+    "type": "contains_any",
+    "values": [
+     "24"
+    ]
+   },
+   {
+    "type": "not_regex",
+    "pattern": "\\b(it'?s|it is|this is) not (just |only )?[^.]{1,40}[,;—-]+ (it'?s|it is)\\b|\\bnot just\\b[^.]{1,40}\\bbut\\b"
+   },
+   {
+    "type": "not_regex",
+    "pattern": "—"
+   },
+   {
+    "type": "not_regex",
+    "pattern": "\\b(unlock|elevate|seamless(ly)?|game[- ]changer|say goodbye|reimagined|take it to the next level)\\b"
+   }
+  ]
+ },
+ {
+  "id": "fix-avg",
+  "prompt": "chat_system",
+  "task": "This Python function raises ZeroDivisionError for an empty list: def avg(xs): return sum(xs)/len(xs). Fix it so avg([]) returns 0. Output only the code.",
+  "checks": [
+   {
+    "type": "python_asserts",
+    "asserts": [
+     "avg([]) == 0",
+     "avg([2, 4]) == 3",
+     "avg([5]) == 5"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "improve-instruction",
+  "prompt": "chat_system",
+  "task": "Improve this agent instruction so it gives better results, and output only the improved instruction: 'Write good emails to customers.'",
+  "checks": [
+   {
+    "type": "min_words",
+    "value": 40
+   },
+   {
+    "type": "regex",
+    "pattern": "\\b(check|verify|review|before sending|proofread)\\b"
+   }
+  ]
+ }
+]

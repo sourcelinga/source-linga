@@ -1,0 +1,28 @@
+[
+ {
+  "id": "refund-window",
+  "prompt": "chat_system",
+  "task": "What is our refund/return window? Answer briefly.",
+  "checks": [
+   {
+    "type": "regex",
+    "pattern": "\\b(14|fourteen)[- ]day"
+   }
+  ]
+ },
+ {
+  "id": "no-wrong-claim",
+  "prompt": "chat_system",
+  "task": "A customer asks: are your products certified organic? Answer in one or two sentences.",
+  "checks": [
+   {
+    "type": "regex",
+    "pattern": "\\b(no|not)\\b"
+   },
+   {
+    "type": "not_regex",
+    "pattern": "\\byes\\b"
+   }
+  ]
+ }
+]
