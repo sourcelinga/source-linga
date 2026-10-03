@@ -8,49 +8,54 @@ A private AI that runs on your own Mac and finds better ways to use the tools, s
 
 Source Linga runs entirely on your Mac: a local open model (through [Ollama](https://ollama.com)) plus a small Python engine called **Forge**. Nothing you type leaves the machine. You use it from a **native Mac app**, and your **iPhone, iPad, Android phone** and other Macs use the same AI over your home Wi-Fi, with your chats synced between them.
 
-<p align="center"><b>📱 <a href="docs/INSTALL.md">Step-by-step install for Mac, iPhone, iPad and Android →</a></b><br>
-<a href="https://github.com/sourcelinga/source-linga/releases/latest">Download the apps (Releases)</a></p>
+<p align="center">
+<a href="https://github.com/sourcelinga/source-linga/releases/latest/download/SourceLinga.dmg"><b>⬇ Download for Mac</b></a> ·
+<a href="https://github.com/sourcelinga/source-linga/releases/latest/download/SourceLinga.apk">Android app</a> ·
+<a href="docs/INSTALL.md"><b>Step-by-step install guide</b></a>
+</p>
 
 | | App | What you get |
 |---|---|---|
-| **Mac** (macOS 14+) | Native SwiftUI app | Chat list synced with your phones; ⌥Space from any app; menu-bar quick ask; streamed Markdown answers with copy, read-aloud, share, retry and edit; built-in Tools window. |
-| **iPhone / iPad** (iOS 17+) | Home Screen app, plus native SwiftUI source | Full-screen chat in one tap: synced history, search, copy, read-aloud, and the keyboard never covers the composer. Optional native app via Xcode. |
-| **Android** (8.0+) | Native app (300 KB APK) | Finds your Mac by itself, pairs with a 6-digit code, Share → Source Linga from any app, New-chat shortcut, dark mode. |
+| **Mac** (macOS 14+) | Native SwiftUI app with Liquid Glass | One-click setup, chats synced with your phones, ⌥Space from any app, menu-bar quick ask, streamed answers with copy, read-aloud, share, retry and edit, and a built-in Tools window. |
+| **iPhone / iPad** (iOS 17+) | Home Screen app, plus native SwiftUI source | Full-screen chat in one tap, with synced history, search, copy and read-aloud. |
+| **Android** (8.0+) | Native app (0.2 MB APK) | Finds your Mac by itself, pairs with a 6-digit code, Share → Source Linga from any app, New-chat shortcut, dark mode. |
 
 What makes it different from a plain local chatbot:
 
-- **It improves your work, not just answers questions.** Give it a skill, prompt, email, workflow or script; it writes several versions using different strategies, scores them, checks the winner against the original twice (order swapped) and shows a diff.
-- **It knows your material.** It indexes your notes, skills, project files and past Claude Code sessions, and learns lessons from them.
+- **It improves your work, not just answers questions.** Give it a skill, prompt, email, workflow or script. It writes several versions with different strategies, scores them, checks the winner against your original twice (with the order swapped) and shows a diff.
+- **It knows your material.** It indexes your notes and project files, and learns lessons from them.
 - **It brings expert playbooks.** 12 skills adapted from popular open-source collections (debugging, testing, planning, copywriting, cold outreach, social posts and more). The best match is added to each request automatically.
-- **It updates itself, carefully.** Weekly it tries one newer model and switches only if it scores higher on a fixed test suite; it rewrites its own instructions only when the tests improve. The judge is frozen, so it can't grade itself easier.
-- **It stays honest.** Your "house rules" (facts and forbidden claims) are enforced on every answer and every draft.
+- **It updates itself, carefully.** Once a week it tries one newer model and switches only if it scores higher on a fixed test suite. It rewrites its own instructions only when the tests improve. The judge is frozen, so it can't make its own grading easier.
+- **It stays honest.** Your optional "house rules" (facts and forbidden claims) apply to every answer and every draft.
 
-## Requirements
+## Install (no Terminal, no account)
 
-- A Mac with Apple Silicon (M1 or newer). 16 GB RAM recommended for the default 9B model.
-- macOS 14 Sonoma or newer, ~10 GB free disk.
-- Python 3 (the one that comes with the Xcode Command Line Tools is enough; no extra packages).
+1. **Download** [SourceLinga.dmg](https://github.com/sourcelinga/source-linga/releases/latest/download/SourceLinga.dmg), open it and drag **Source Linga** into **Applications**.
+2. **Open it.** The first time, macOS asks you to confirm: go to **System Settings → Privacy & Security → Open Anyway**.
+3. Click **Set up on this Mac**. The app installs Ollama and the right-sized AI model for your Mac, plus a small background service, and shows each step as it goes. It takes 10–30 minutes, almost all of it the model download.
+4. Click **Start chatting**.
 
-## Install
+Phones and other Macs: **Tools → Devices** on the Mac shows a QR code. Scan it and type the 6-digit code. The **[install guide](docs/INSTALL.md)** walks through every device, plus updating and uninstalling.
+
+### Requirements
+
+- A Mac with Apple silicon (M1 or newer) and macOS 14 Sonoma or newer.
+- 8 GB of memory or more. Macs with 16 GB+ get `qwen3.5:9b`; 8 GB Macs get the lighter `qwen3.5:4b`, chosen automatically.
+- About 12 GB of free disk space.
+
+### From source (developers)
 
 ```bash
-git clone https://github.com/sourcelinga/source-linga.git
-```
-```bash
-cd source-linga && bash install.sh
+git clone https://github.com/sourcelinga/source-linga.git && cd source-linga && bash install.sh
 ```
 
-The installer downloads Ollama (if missing) and the models (`qwen3.5:9b`, ~6.6 GB, and `nomic-embed-text`), then installs a small background service (`~/Applications/Forge.app`) that starts at login. If macOS asks whether it may read your Documents folder, click **Allow**.
+## Make it yours (optional, 5 minutes)
 
-Then open **Source Linga** from Launchpad or `~/Applications` (the installer builds the Mac app), or open **http://127.0.0.1:8777/app** in a browser. The full tools are at **http://127.0.0.1:8777**.
-
-To stop and remove the service later: `bash uninstall.sh` (your models and data stay).
-
-## Make it yours (5 minutes)
+The app setup keeps these files in `~/Library/Application Support/SourceLinga/engine` (in Finder: **Go → Go to Folder…**). A source install keeps them in the repository folder. Open them in TextEdit.
 
 | File | What to put there |
 |---|---|
-| `house-rules.md` | Copy `house-rules.example.md`. Your facts (prices, policies, product details) and claims it must never make. |
+| `house-rules.md` | Starts empty. Add `- ` lines with your facts (prices, policies, product details) and claims it must never make. |
 | `config.json` | Created on first run from `config.example.json`. Set `sources` (folders to learn from) and `allowed_roots` (folders it may read). |
 | `local/workflows/*.md` | Your own one-click business workflows (same format as `workflows/`). |
 | `evals/local-cases.json` | Tests of your own facts (see `evals/local-cases.example.json`). Model switches and prompt rewrites must pass these. |
@@ -121,7 +126,7 @@ The tests (`evals/cases.json` + your `evals/local-cases.json`) are deterministic
 - Requests from other websites are refused (Origin/Host checks), so a web page you visit cannot drive it.
 - Chat can read only inside `allowed_roots` and can write only to `outputs/`.
 
-## Commands
+## Commands (source installs)
 
 ```bash
 bash restart.sh
