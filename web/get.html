@@ -37,6 +37,9 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;pointer-events:none
 .hero img{border-radius:24px;padding:8px;background:var(--panel);border:1px solid var(--line);box-shadow:inset 1px 1px 0 var(--rim),var(--shadow);box-sizing:content-box}
 .btn{border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 18px rgba(85,102,255,.35)}
 code{background:var(--chip)}
+
+.pc{text-align:center;background:var(--chip);border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin:6px 0 4px;font-weight:600}
+.pc b{display:block;font:700 30px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:var(--accent);margin-top:2px}
 ol li::marker{color:var(--accent);font-weight:700}
 </style>
 </head>
@@ -46,6 +49,7 @@ ol li::marker{color:var(--accent);font-weight:700}
 
   <section class="card" id="android">
     <h2>Android</h2>
+    <div class="pc">Before signing in, use this pairing code:<b class="pcode">shown on the Mac in Tools → Devices</b></div>
     <a class="btn" href="/download/android" id="apk">Download the Android app</a>
     <ol>
       <li>Tap <b>Download</b> above, then open <b>SourceLinga.apk</b> from the notification or your Downloads.</li>
@@ -57,6 +61,7 @@ ol li::marker{color:var(--accent);font-weight:700}
 
   <section class="card" id="iphone">
     <h2>iPhone and iPad</h2>
+    <div class="pc">Before signing in, use this pairing code:<b class="pcode">shown on the Mac in Tools → Devices</b></div>
     <ol>
       <li>Open this page in <b>Safari</b>.</li>
       <li><a href="/pair">Tap here to pair</a> and type the 6-digit code shown on the Mac.</li>
@@ -66,6 +71,7 @@ ol li::marker{color:var(--accent);font-weight:700}
 
   <section class="card" id="mac">
     <h2>Another Mac</h2>
+    <div class="pc">Before signing in, use this pairing code:<b class="pcode">shown on the Mac in Tools → Devices</b></div>
     <a class="btn" href="/download/mac" id="macdl">Download the Mac app</a>
     <ol>
       <li>Open <b>SourceLinga-mac.zip</b>, then drag <b>Source Linga</b> into <b>Applications</b>.</li>
@@ -83,6 +89,7 @@ const mine=/Android/.test(ua)?'android':/iPhone|iPad|iPod/.test(ua)||(/Macintosh
 ids.forEach(id=>document.getElementById(id).classList.toggle('on',!mine||id===mine));
 document.getElementById('all').onclick=e=>{ids.forEach(id=>document.getElementById(id).classList.add('on'));e.target.hidden=true};
 fetch('/api/info').then(r=>r.json()).then(i=>{
+  if(i.pair_code)document.querySelectorAll('.pcode').forEach(e=>e.textContent=i.pair_code);
   if(i.computer)document.getElementById('who').textContent='Private AI running on '+i.computer;
   if(!(i.apps||[]).includes('/download/android')){document.getElementById('apk').hidden=true;document.getElementById('noapk').hidden=false}
   if(!(i.apps||[]).includes('/download/mac')){document.getElementById('macdl').hidden=true;document.getElementById('nomac').hidden=false}}).catch(()=>{});

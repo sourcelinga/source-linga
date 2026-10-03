@@ -44,7 +44,7 @@ button{border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--
 <form class="card" id="f">
   <img src="/icon-180.png" alt="">
   <h1>Pair this device</h1>
-  <p>On your Mac, open Source Linga → <b>Devices</b> and type the 6-digit code shown there.</p>
+  <p id="pc">Before signing in, use this pairing code. It is shown on your Mac in Source Linga → <b>Tools → Devices</b>.</p>
   <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
   <button type="submit">Pair</button>
   <div id="msg"></div>
@@ -54,7 +54,7 @@ document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=docum
   try{const r=await fetch('/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:document.getElementById('code').value})});
     const j=await r.json();if(r.ok){location.replace('/app')}else m.textContent=j.error||'Could not pair'}catch(err){m.textContent='Cannot reach the Mac. Same Wi-Fi?'}};
 const h=location.hash.match(/code=(\d{6})/);if(h){document.getElementById('code').value=h[1];history.replaceState(null,'','/pair')}
-fetch('/api/info').then(r=>r.json()).then(i=>{if(i.paired)location.replace('/app');else if(i.computer)document.querySelector('h1').textContent='Pair with '+i.computer}).catch(()=>{});
+fetch('/api/info').then(r=>r.json()).then(i=>{if(i.paired)location.replace('/app');if(i.pair_code)document.getElementById('pc').innerHTML='Before signing in, use this pairing code: <b style="font:700 24px ui-monospace,Menlo,monospace;letter-spacing:.15em">'+i.pair_code+'</b>';else if(i.computer)document.querySelector('h1').textContent='Pair with '+i.computer}).catch(()=>{});
 </script>
 </body>
 </html>
