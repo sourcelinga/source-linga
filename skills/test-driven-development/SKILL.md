@@ -18,8 +18,8 @@ Good tests:
 - No testing of internals or mocks when a real call is cheap.
 
 When answering a coding request:
-- Give the tests (plain assert statements are fine) together with the code.
-- Mentally run every assert against your code line by line before replying; if one would fail, fix the code first.
-- If the request says "output only the code", put the asserts after the function only when that still satisfies the request; otherwise check them silently.
+- If the request says "output only the code" (or "only the function"), output only the code that was asked for: no tests, no example calls, no prints. Check the edge cases silently.
+- Otherwise give the tests (plain assert statements) after the code, in a separate block.
+- Every assert you write must be correct: work out the expected value by hand, line by line. A wrong test breaks working code.
 
 A bug fix starts with a test that reproduces the bug.
