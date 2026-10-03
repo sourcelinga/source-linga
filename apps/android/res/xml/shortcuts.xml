@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="new_chat" android:enabled="true" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/new_chat">
+        <intent android:action="com.sourcelinga.app.NEW_CHAT"
+            android:targetPackage="com.sourcelinga.app" android:targetClass="com.sourcelinga.app.MainActivity" />
+    </shortcut>
+</shortcuts>
