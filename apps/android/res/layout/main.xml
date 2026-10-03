@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <WebView
+        android:id="@+id/web"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
+
+    <!-- first run: find the Mac and pair -->
+    <ScrollView
+        android:id="@+id/setup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="40dp"
+            android:paddingBottom="32dp">
+
+            <ImageView
+                android:id="@+id/logo1"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:contentDescription="@string/app_name"
+                android:elevation="12dp"
+                android:outlineProvider="background"
+                android:src="@drawable/logo" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Connect to your Mac"
+                android:textColor="@color/ink"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:lineSpacingExtra="3dp"
+                android:text="Source Linga's AI runs on your Mac. This phone sends it questions over your Wi-Fi."
+                android:textColor="@color/mute"
+                android:textSize="15sp" />
+
+            <LinearLayout
+                android:id="@+id/pickStep"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical">
+
+                <TextView style="@style/Label" android:text="MACS ON THIS WI-FI" />
+
+                <LinearLayout
+                    android:id="@+id/found"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/searching"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/field"
+                    android:padding="16dp"
+                    android:text="Looking… On the Mac, open Source Linga → Tools → Devices and switch on access."
+                    android:textColor="@color/mute"
+                    android:textSize="14sp" />
+
+                <TextView style="@style/Label" android:layout_marginTop="22dp" android:text="OR TYPE THE ADDRESS" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/field"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="6dp">
+
+                    <EditText
+                        android:id="@+id/address"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="e.g. 192.168.1.20"
+                        android:imeOptions="actionGo"
+                        android:inputType="textUri"
+                        android:singleLine="true"
+                        android:textColor="@color/ink"
+                        android:textColorHint="@color/mute"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/next"
+                        style="@style/Primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:text="Next" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="The address is shown on the Mac in Tools → Devices."
+                    android:textColor="@color/mute"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/codeStep"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/pairWith"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/ink"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="Type the 6-digit code shown on the Mac in Tools → Devices."
+                    android:textColor="@color/mute"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/code"
+                    android:layout_width="match_parent"
+                    android:layout_height="68dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/field"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:hint="••••••"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:letterSpacing="0.35"
+                    android:maxLength="6"
+                    android:textColor="@color/ink"
+                    android:textColorHint="@color/mute"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/pair"
+                    style="@style/Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="14dp"
+                    android:text="Pair" />
+
+                <Button
+                    android:id="@+id/back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@null"
+                    android:text="Choose another Mac"
+                    android:textAllCaps="false"
+                    android:textColor="@color/mute" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/busy"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginTop="16dp"
+                android:indeterminateTint="@color/ink"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/error"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textColor="@color/bad"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- shown when the Mac can't be reached -->
+    <LinearLayout
+        android:id="@+id/offline"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/logo2"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:alpha="0.9"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Can't reach your Mac"
+            android:textColor="@color/ink"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/offlineWhy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:text="Make sure the Mac is awake, Source Linga is running, and this phone is on the same Wi-Fi."
+            android:textColor="@color/mute"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/retry"
+            style="@style/Primary"
+            android:layout_width="200dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:text="Try again" />
+
+        <Button
+            android:id="@+id/changeMac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@null"
+            android:text="Connect to a different Mac"
+            android:textAllCaps="false"
+            android:textColor="@color/mute" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/mute" />
+</FrameLayout>
