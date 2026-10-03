@@ -1,0 +1,10 @@
+{
+  "sharpen": "Keep the same approach, but make every instruction or sentence more specific and unambiguous. Replace vague words with exact actions, names, numbers or criteria that are already present in the context.",
+  "restructure": "Reorganise into a clearly better structure for the reader or executor, such as numbered steps, a checklist, a decision table or if/then rules. Keep the content and change the shape.",
+  "different_method": "Reach the same goal with a fundamentally different method, tool order or angle than the current version uses. Ask: what would an expert do differently here? Commit to that alternative fully.",
+  "lessons_applied": "Read the LESSONS from past sessions in the context and change the work so it avoids those failures and repeats what worked. Each change must trace back to a lesson.",
+  "verify_loop": "Add the verification the current version lacks: checks before acting, self-review against the goal, tests, or 'confirm X before Y'. Remove steps that cannot fail.",
+  "examples": "Add one or two short, concrete worked examples (good vs bad) drawn from the context, so the reader cannot misunderstand. Do not invent facts for the examples.",
+  "simplify": "Cut everything that does not change the outcome. Make it shorter and more direct, and keep every essential element.",
+  "audience_first": "Rewrite from the point of view of whoever receives or runs it (the customer, the business owner, the agent, the interpreter). Lead with what they care about most."
+}

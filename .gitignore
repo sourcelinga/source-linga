@@ -1,0 +1,14 @@
+# Your private material: never published
+config.json
+house-rules.md
+local/
+evals/local-cases.json
+data/
+outputs/
+prompts/history/
+
+# Python / macOS
+__pycache__/
+*.pyc
+.DS_Store
+._*

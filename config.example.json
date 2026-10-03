@@ -1,0 +1,88 @@
+{
+  "ollama_url": "http://127.0.0.1:11434",
+  "port": 8777,
+  "model": "qwen3.5:9b",
+  "embed_model": "nomic-embed-text",
+  "num_ctx": 16384,
+  "keep_alive": "60m",
+  "archive_dir": "",
+  "candidate_models": [
+    "qwen3.5:9b",
+    "gemma4:e4b",
+    "gemma4:12b",
+    "qwen3:8b",
+    "qwen3:14b"
+  ],
+  "max_model_gb": 10,
+  "min_free_disk_gb": 15,
+  "min_tokens_per_sec": 6,
+  "switch_margin": 0.05,
+  "remove_losing_candidates": true,
+  "schedule_hours": {
+    "knowledge": 6,
+    "lessons": 24,
+    "model_updates": 168,
+    "candidate_eval": 168,
+    "prompt_self_improve": 168
+  },
+  "sources": [
+    {
+      "path": "~/.claude/skills",
+      "include": [
+        "*.md"
+      ]
+    },
+    {
+      "path": "~/.claude/plugins/marketplaces",
+      "include": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "path": "~/Documents/Notes",
+      "include": [
+        "*.md",
+        "*.txt"
+      ]
+    },
+    {
+      "path": "./skills",
+      "include": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "path": "./workflows",
+      "include": [
+        "*.md"
+      ]
+    },
+    {
+      "path": "./local/workflows",
+      "include": [
+        "*.md"
+      ]
+    },
+    {
+      "path": "./house-rules.md"
+    }
+  ],
+  "transcripts": {
+    "path": "~/.claude/projects",
+    "max_files": 80
+  },
+  "max_file_kb": 160,
+  "allowed_roots": [
+    "~/Documents/Notes",
+    "~/.claude/skills"
+  ],
+  "variants": 4,
+  "rounds": 1,
+  "context_chunks": 6,
+  "chat_notes": 3,
+  "chat_context_chars": 3500,
+  "skills_enabled": true,
+  "skill_threshold": 0.62,
+  "lan_access": false,
+  "house_rules_trigger": ""
+}
