@@ -16,7 +16,7 @@ struct ConnectView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
-                Logo(size: 84).shadow(color: .primary.opacity(0.18), radius: 20).padding(.top, 30)
+                Logo(size: 84).padding(10).glass(RoundedRectangle(cornerRadius: 32, style: .continuous)).padding(.top, 30)
                 VStack(spacing: 6) {
                     Text("Connect to your Mac").font(.title.bold())
                     Text("Source Linga's AI runs on your Mac. This device sends it questions over your Wi-Fi.")
@@ -29,6 +29,7 @@ struct ConnectView: View {
             .padding(24)
             .frame(maxWidth: .infinity)
         }
+        .background(LiquidBackdrop())
         .onAppear { discovery.start() }
         .onDisappear { discovery.stop() }
     }
@@ -43,7 +44,7 @@ struct ConnectView: View {
                         .font(.callout).foregroundStyle(.secondary)
                 }
                 .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.field, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .glassCard(16)
             }
             ForEach(discovery.found) { mac in
                 Button {
@@ -64,8 +65,8 @@ struct ConnectView: View {
                         if busy { ProgressView().controlSize(.small) } else { Image(systemName: "chevron.right").foregroundStyle(.tertiary) }
                     }
                     .padding(14)
-                    .background(Theme.field, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .contentShape(Rectangle())
+                    .glassCard(16, interactive: true)
                 }
                 .buttonStyle(.plain)
             }
@@ -80,7 +81,7 @@ struct ConnectView: View {
                 Button("Next", action: useAddress).bold().disabled(address.isEmpty)
             }
             .padding(14)
-            .background(Theme.field, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .glassCard(16)
             Text("The address is shown on the Mac in Tools → Devices.").font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -99,12 +100,12 @@ struct ConnectView: View {
                 .keyboardType(.numberPad).textContentType(.oneTimeCode)
                 #endif
                 .padding(14)
-                .background(Theme.field, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .glassCard(18)
                 .onChange(of: code) { if code.count == 6 { pair() } }
             Button(action: pair) {
-                Group { if busy { ProgressView() } else { Text("Pair").bold() } }.frame(maxWidth: .infinity).padding(.vertical, 6)
+                Group { if busy { ProgressView().tint(.white) } else { Text("Pair") } }
             }
-            .buttonStyle(.borderedProminent).tint(.primary).disabled(code.count != 6 || busy)
+            .buttonStyle(GlassPrimaryButtonStyle()).disabled(code.count != 6 || busy)
             Button("Choose another Mac") { target = nil; code = ""; error = nil }.buttonStyle(.borderless)
         }
     }
@@ -146,6 +147,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("hotkey") private var hotkey = true
     @State private var showConnect = false
+    @State private var confirmRemove = false
 
     var body: some View {
         Form {
@@ -162,7 +164,10 @@ struct SettingsView: View {
                 if store.endpoint?.isLocal == false {
                     Button("Use the AI on this Mac instead") { store.disconnect() }
                 }
-                if Engine.appURL != nil { Button("Start the AI engine") { Engine.start() } }
+                if Engine.appURL != nil {
+                    Button("Start the AI engine") { Engine.start() }
+                    Button("Remove the AI engine from this Mac…", role: .destructive) { confirmRemove = true }
+                }
                 Button("Connect to the AI on another Mac…") { showConnect = true }
             }
             #else
@@ -173,7 +178,7 @@ struct SettingsView: View {
             }
             #endif
             Section("About") {
-                LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.1")
+                LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "2.0")
                 Link("Instructions and source code", destination: URL(string: "https://github.com/sourcelinga/source-linga")!)
             }
         }
@@ -188,6 +193,11 @@ struct SettingsView: View {
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showConnect = false } } }
         }
         .onChange(of: store.endpoint) { showConnect = false }
+        .confirmationDialog("Remove the AI engine?", isPresented: $confirmRemove) {
+            Button("Remove", role: .destructive) { Setup.uninstall(); Task { await store.refresh() } }
+        } message: {
+            Text("This stops the background service. Your chats and downloaded models are kept, so setting up again is quick. To delete the app too, drag Source Linga from Applications to the Bin.")
+        }
         #endif
     }
 }

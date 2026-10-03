@@ -161,12 +161,12 @@ struct QuickAskView: View {
                     .onChange(of: quick.draft) { quick.draftChanged() }
                 Button { quick.isStreaming ? quick.stop() : quick.send() } label: {
                     Image(systemName: quick.isStreaming ? "stop.circle.fill" : "arrow.up.circle.fill").font(.title2)
+                        .foregroundStyle(Theme.accent)
                 }
                 .buttonStyle(.borderless)
             }
             .padding(10)
-            .background(Theme.field, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(.quaternary))
+            .glassCard(18)
         }
         .padding(14)
         .frame(width: 420)

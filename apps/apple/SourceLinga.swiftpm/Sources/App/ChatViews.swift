@@ -8,9 +8,13 @@ struct RootView: View {
     @State private var showTools = false
     @State private var showSettings = false
 
-    /// iPhone/iPad before pairing, or a Mac without its own AI engine: show the "find your Mac" screen.
+    /// iPhone/iPad before pairing: show the "find your Mac" screen.
     private var needsConnect: Bool {
-        if store.connection == .unpaired && !(store.endpoint?.isLocal ?? false) { return true }
+        store.connection == .unpaired && !(store.endpoint?.isLocal ?? false)
+    }
+
+    /// A Mac with no AI engine installed yet: offer to set it up here (or to use another Mac's).
+    private var needsSetup: Bool {
         #if os(macOS)
         if store.endpoint?.isLocal == true, case .offline = store.connection, Engine.appURL == nil { return true }
         #endif
@@ -19,7 +23,11 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if needsConnect {
+            if needsSetup {
+                #if os(macOS)
+                WelcomeView()
+                #endif
+            } else if needsConnect {
                 ConnectView()
             } else {
                 NavigationSplitView(columnVisibility: $columns) {
@@ -124,8 +132,9 @@ struct Sidebar: View {
                     .buttonStyle(.borderless).help("Tools: improve, workflows, knowledge, updates, devices")
                 #endif
             }
-            .padding(.horizontal, 14).padding(.vertical, 10)
-            .background(.bar)
+            .padding(.horizontal, 14).padding(.vertical, 9)
+            .glass(Capsule())
+            .padding(.horizontal, 10).padding(.bottom, 8)
         }
     }
 }
@@ -174,6 +183,7 @@ struct ChatView: View {
           }
         }
         .safeAreaInset(edge: .bottom) { Composer() }
+        .background(LiquidBackdrop())
         .navigationTitle(store.current.messages.isEmpty ? "" : (store.current.title.isEmpty ? "New chat" : store.current.title))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -208,8 +218,8 @@ struct Banner: View {
             #endif
             Button("Retry", action: retry).bold()
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .glass(Capsule())
         .padding(.horizontal, 16)
         .frame(maxWidth: 760)
     }
@@ -230,10 +240,11 @@ struct EmptyState: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Logo(size: 76).shadow(color: .primary.opacity(0.15), radius: 18)
+            Logo(size: 80).padding(10).glass(RoundedRectangle(cornerRadius: 30, style: .continuous))
             Text(greeting).font(.largeTitle.weight(.bold))
             Text("Private AI that runs on your own Mac.\nYour chats stay on your devices.")
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
+            GlassGroup(spacing: 10) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 10)], spacing: 10) {
                 ForEach(suggestions, id: \.0) { s in
                     Button {
@@ -241,7 +252,7 @@ struct EmptyState: View {
                         store.focusTick += 1
                     } label: {
                         HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: s.2).frame(width: 20).foregroundStyle(.secondary)
+                            Image(systemName: s.2).frame(width: 20).foregroundStyle(Theme.accentGradient)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(s.0).fontWeight(.semibold)
                                 Text(s.1).font(.callout).foregroundStyle(.secondary)
@@ -249,12 +260,12 @@ struct EmptyState: View {
                             Spacer(minLength: 0)
                         }
                         .padding(14)
-                        .background(Theme.field, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.quaternary))
                         .contentShape(Rectangle())
+                        .glassCard(18, interactive: true)
                     }
                     .buttonStyle(.plain)
                 }
+            }
             }
             .frame(maxWidth: 600)
             .padding(.top, 14)
@@ -276,10 +287,10 @@ struct MessageRow: View {
                 Text(message.content)
                     .textSelection(.enabled)
                     .padding(.horizontal, 15).padding(.vertical, 10)
-                    .foregroundStyle(userInk)
-                    .background(Theme.userBubble, in: UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: 20,
-                                                                            bottomTrailingRadius: 6, topTrailingRadius: 20,
-                                                                            style: .continuous))
+                    .foregroundStyle(.white)
+                    .glass(UnevenRoundedRectangle(topLeadingRadius: 20, bottomLeadingRadius: 20,
+                                                  bottomTrailingRadius: 6, topTrailingRadius: 20, style: .continuous),
+                           tint: Theme.accent)
             }
         } else {
             VStack(alignment: .leading, spacing: 8) {
@@ -298,9 +309,6 @@ struct MessageRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-
-    @Environment(\.colorScheme) private var scheme
-    private var userInk: Color { scheme == .dark ? .black : .white }
 
     private var actions: some View {
         HStack(spacing: 4) {
@@ -341,14 +349,14 @@ struct MetaChips: View {
     }
     private func chip(_ s: String) -> some View {
         Text(s).font(.caption).lineLimit(1).padding(.horizontal, 8).padding(.vertical, 2)
-            .background(.quaternary.opacity(0.6), in: Capsule())
+            .background(Theme.accent.opacity(0.12), in: Capsule())
     }
 }
 
 struct PulseOrb: View {
     @State private var on = false
     var body: some View {
-        Circle().fill(.primary).frame(width: 12, height: 12)
+        Circle().fill(Theme.accentGradient).frame(width: 12, height: 12)
             .scaleEffect(on ? 1 : 0.6).opacity(on ? 1 : 0.35)
             .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: on)
             .onAppear { on = true }
@@ -374,25 +382,16 @@ struct Composer: View {
                     #if os(iOS)
                     .submitLabel(.return)
                     #endif
-                Button {
+                GlassIconButton(systemImage: store.isStreaming ? "stop.fill" : "arrow.up", size: 36, prominent: true) {
                     if store.isStreaming { store.stop() } else { store.send() }
-                } label: {
-                    Image(systemName: store.isStreaming ? "stop.fill" : "arrow.up")
-                        .font(.system(size: 15, weight: .bold))
-                        .frame(width: 34, height: 34)
-                        .foregroundStyle(scheme == .dark ? .black : .white)
-                        .background(Circle().fill(.primary))
                 }
-                .buttonStyle(.plain)
                 .disabled(!store.isStreaming && store.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .opacity(!store.isStreaming && store.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.3 : 1)
                 .keyboardShortcut(store.isStreaming ? "." : .return, modifiers: .command)
                 .padding(5)
                 .sensoryFeedback(.impact(weight: .light), trigger: store.isStreaming)
             }
-            .background(Theme.field, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.quaternary))
-            .shadow(color: .black.opacity(0.08), radius: 14, y: 4)
+            .glassCard(26)
             #if os(macOS)
             Text("Runs privately on your Mac · Return to send · ⌥Space from any app")
                 .font(.caption2).foregroundStyle(.tertiary)
@@ -401,13 +400,10 @@ struct Composer: View {
         .frame(maxWidth: 760)
         .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 10)
         .frame(maxWidth: .infinity)
-        .background(.bar.opacity(0.0))
         .onChange(of: store.focusTick) { focused = true }
         .onAppear { focused = true }
         #if os(macOS)
         .onReceive(NotificationCenter.default.publisher(for: .slFocusComposer)) { _ in focused = true }
         #endif
     }
-
-    @Environment(\.colorScheme) private var scheme
 }
