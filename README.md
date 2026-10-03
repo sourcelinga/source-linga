@@ -6,7 +6,16 @@ A private AI that runs on your own Mac and finds better ways to use the tools, s
 
 ---
 
-Source Linga runs entirely on your Mac: a local open model (through [Ollama](https://ollama.com)) plus a small Python engine called **Forge**. Nothing you type leaves the machine. You use it from a web app on the Mac, and your iPhone, iPad or other Macs can use it over your home Wi-Fi.
+Source Linga runs entirely on your Mac: a local open model (through [Ollama](https://ollama.com)) plus a small Python engine called **Forge**. Nothing you type leaves the machine. You use it from a **native Mac app**, and your **iPhone, iPad, Android phone** and other Macs use the same AI over your home Wi-Fi, with your chats synced between them.
+
+<p align="center"><b>📱 <a href="docs/INSTALL.md">Step-by-step install for Mac, iPhone, iPad and Android →</a></b><br>
+<a href="https://github.com/sourcelinga/source-linga/releases/latest">Download the apps (Releases)</a></p>
+
+| | App | What you get |
+|---|---|---|
+| **Mac** (macOS 14+) | Native SwiftUI app | Chat list synced with your phones; ⌥Space from any app; menu-bar quick ask; streamed Markdown answers with copy, read-aloud, share, retry and edit; built-in Tools window. |
+| **iPhone / iPad** (iOS 17+) | Home Screen app, plus native SwiftUI source | Full-screen chat in one tap: synced history, search, copy, read-aloud, and the keyboard never covers the composer. Optional native app via Xcode. |
+| **Android** (8.0+) | Native app (300 KB APK) | Finds your Mac by itself, pairs with a 6-digit code, Share → Source Linga from any app, New-chat shortcut, dark mode. |
 
 What makes it different from a plain local chatbot:
 
@@ -19,7 +28,7 @@ What makes it different from a plain local chatbot:
 ## Requirements
 
 - A Mac with Apple Silicon (M1 or newer). 16 GB RAM recommended for the default 9B model.
-- macOS 13 or newer, ~10 GB free disk.
+- macOS 14 Sonoma or newer, ~10 GB free disk.
 - Python 3 (the one that comes with the Xcode Command Line Tools is enough; no extra packages).
 
 ## Install
@@ -33,7 +42,7 @@ cd source-linga && bash install.sh
 
 The installer downloads Ollama (if missing) and the models (`qwen3.5:9b`, ~6.6 GB, and `nomic-embed-text`), then installs a small background service (`~/Applications/Forge.app`) that starts at login. If macOS asks whether it may read your Documents folder, click **Allow**.
 
-Then open **http://127.0.0.1:8777**.
+Then open **Source Linga** from Launchpad or `~/Applications` (the installer builds the Mac app), or open **http://127.0.0.1:8777/app** in a browser. The full tools are at **http://127.0.0.1:8777**.
 
 To stop and remove the service later: `bash uninstall.sh` (your models and data stay).
 
@@ -52,7 +61,7 @@ Everything above is listed in `.gitignore`, so it never gets published if you fo
 ## Using it
 
 ### On the Mac
-Open http://127.0.0.1:8777. In Safari you can choose **File → Add to Dock** to get an app icon.
+Open the **Source Linga** app for chatting (⌘N new chat, ⌥Space from anywhere, menu-bar quick ask). Its 🛠 **Tools** window (or http://127.0.0.1:8777) has everything else:
 
 | Tab | Use it for |
 |---|---|
@@ -64,12 +73,12 @@ Open http://127.0.0.1:8777. In Safari you can choose **File → Add to Dock** to
 | **Self-prompts** | Its own instructions, with every older version one click away. |
 | **Devices** | Turn on iPhone/iPad access and see the pairing code. |
 
-### On iPhone, iPad or another Mac (same Wi-Fi)
-1. On the Mac: **Devices** tab → tick *Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga*.
-2. On the iPhone/iPad: open Safari at the address shown (for example `http://your-mac.local:8777`) and type the 6-digit pairing code.
-3. Tap **Share → Add to Home Screen**. It now opens like an app.
+### On iPhone, iPad, Android or another Mac (same Wi-Fi)
+1. On the Mac: **Tools → Devices** → tick *Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga*. A QR code and a 6-digit pairing code appear.
+2. Scan the QR code with the phone's camera and follow the page: **iPhone/iPad** pair and *Add to Home Screen*; **Android** download and install the app, which finds the Mac by itself.
+3. Type the pairing code once per device.
 
-The model still runs on the Mac; the phone only sends the question. Each device pairs once. **New key** in the Devices tab un-pairs everything.
+Full step-by-step instructions, the native iPhone app, using it away from home, and fixes for common problems: **[docs/INSTALL.md](docs/INSTALL.md)**.
 
 ### Native apps, Siri and scripts
 Source Linga speaks the Ollama and OpenAI APIs, so other apps get the same knowledge, skills and tools. Use the **app key** from the Devices tab.
@@ -133,6 +142,7 @@ A 9B local model is much weaker than the best cloud models. Source Linga's stren
 - Skills adapted (condensed, MIT) from [obra/superpowers](https://github.com/obra/superpowers) and [coreyhaines31/marketingskills](https://github.com/coreyhaines31/marketingskills); ideas from [muratcankoylan/Agent-Skills-for-Context-Engineering](https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering). See [skills/THIRD_PARTY_NOTICES.md](skills/THIRD_PARTY_NOTICES.md).
 - Runs on [Ollama](https://ollama.com) and open models (default: Qwen 3.5 9B, nomic-embed-text).
 - Works with [Enchanted](https://github.com/gluonfield/enchanted) on iPhone/iPad/Mac.
+- QR codes by [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (Kazuhiko Arase, MIT).
 
 ## License
 

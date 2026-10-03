@@ -7,7 +7,7 @@ HERE="$(pwd)"
 [ -f config.json ] || cp config.example.json config.json
 [ -f house-rules.md ] || cp house-rules.example.md house-rules.md
 mkdir -p data outputs local/workflows local/skills
-chmod +x install.sh restart.sh uninstall.sh 2>/dev/null || true  # GitHub web uploads drop the executable bit
+chmod +x install.sh restart.sh uninstall.sh apps/mac/build.sh apps/android/build.sh 2>/dev/null || true  # GitHub web uploads drop the executable bit
 MODEL=$(python3 -c "import json;print(json.load(open('config.json'))['model'])")
 EMBED=$(python3 -c "import json;print(json.load(open('config.json'))['embed_model'])")
 
@@ -74,4 +74,11 @@ echo "→ Service installed (Forge.app via com.forge.localai). If macOS asks for
 until curl -sf http://127.0.0.1:8777/api/status >/dev/null; do sleep 2; done
 curl -s -X POST -H 'Content-Type: application/json' -d '{"only":["knowledge"],"force":true}' http://127.0.0.1:8777/api/update >/dev/null
 echo "→ First index started in the background (watch it in the Knowledge tab)"
-echo "✓ Source Linga is running at http://127.0.0.1:8777  (Devices tab: use it from iPhone/iPad)"
+
+# 5. The Mac app (native window, menu bar, ⌥Space). Built here from source, so macOS trusts it right away.
+if command -v swiftc >/dev/null 2>&1; then
+  echo "→ Building the Source Linga Mac app"
+  bash apps/mac/build.sh --install || echo "  (Mac app build skipped; the web app works the same: http://127.0.0.1:8777/app)"
+fi
+echo "✓ Source Linga is running. Mac app: ~/Applications/Source Linga.app · web: http://127.0.0.1:8777/app"
+echo "  iPhone, iPad, Android: open the Mac app → Tools → Devices and follow the steps there."
