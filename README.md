@@ -35,7 +35,7 @@ What makes it different from a plain local chatbot:
 3. Click **Set up on this Mac**. The app installs Ollama and the right-sized AI model for your Mac, plus a small background service, and shows each step as it goes. It takes 10–30 minutes, almost all of it the model download.
 4. Click **Start chatting**.
 
-Phones and other Macs: **Tools → Devices** on the Mac shows a QR code. Scan it and type the 6-digit code. The **[install guide](docs/INSTALL.md)** walks through every device, plus updating and uninstalling.
+Phones and other Macs: **Tools → Devices** on the Mac shows a QR code. Scan it and type the 6-digit code. Someone far away: tick **Share with someone far away** in the same tab and send them an **invite link**. They tap it and chat, with no app, account or code. The **[install guide](docs/INSTALL.md)** walks through every device, plus updating and uninstalling.
 
 ### Requirements
 
@@ -76,7 +76,7 @@ Open the **Source Linga** app for chatting (⌘N new chat, ⌥Space from anywher
 | **Knowledge** | Search everything it knows; see the installed skills. |
 | **Updates** | Model tests, auto-update history, strategy win-rates. |
 | **Self-prompts** | Its own instructions, with every older version one click away. |
-| **Devices** | Turn on iPhone/iPad access and see the pairing code. |
+| **Devices** | Turn on iPhone/iPad access and see the pairing code; share with someone far away by invite link. |
 
 ### On iPhone, iPad, Android or another Mac (same Wi-Fi)
 1. On the Mac: **Tools → Devices** → tick *Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga*. A QR code and a 6-digit pairing code appear.
@@ -125,6 +125,7 @@ The tests (`evals/cases.json` + your `evals/local-cases.json`) are deterministic
 - With device access off, the server listens on `127.0.0.1` only. With it on, every request from another device needs the device key (pairing cookie or Bearer token); wrong pairing codes are rate-limited; the key and code are shown only on the Mac itself.
 - Requests from other websites are refused (Origin/Host checks), so a web page you visit cannot drive it.
 - Chat can read only inside `allowed_roots` and can write only to `outputs/`.
+- **Sharing with someone far away** is off until you turn it on. It uses a free Cloudflare quick tunnel (Cloudflare's signed `cloudflared`, checked before it runs), so nothing is opened on your router. Only one-time invite links get in; guests can only chat and see only their own chats (no files, notes, house rules or tools), and the pairing code never works from the internet.
 
 ## Commands (source installs)
 
