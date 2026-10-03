@@ -299,7 +299,7 @@ class Handler(BaseHTTPRequestHandler):
         access = self._access()
         if u.path == "/api/info":  # lets an app check that an address really is Source Linga, before pairing
             return self._send(200, {"name": APP_NAME, "version": APP_VERSION, "paired": access is not None,
-                                    "computer": _computer_name(), "apps": [k for k, (n, _) in DOWNLOADS.items()
+                                    "computer": _computer_name(), "pair_code": pair_code(), "apps": [k for k, (n, _) in DOWNLOADS.items()
                                                                            if os.path.isfile(os.path.join(DIST, n))]})
         if access is None:
             if u.path in ("/", "/index.html", "/app") and not self._local_client():
