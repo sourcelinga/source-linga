@@ -9,7 +9,7 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 SRC="$ROOT/apps/apple/SourceLinga.swiftpm/Sources/App"
 OUT="$ROOT/dist"
 APP="$OUT/Source Linga.app"
-VERSION="1.1.0"
+VERSION="2.0.0"
 
 command -v swiftc >/dev/null || { echo "Install Apple's Command Line Tools first:  xcode-select --install"; exit 1; }
 
@@ -37,6 +37,16 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 lipo -create "$TMP/SourceLinga-arm64" "$TMP/SourceLinga-x86_64" -output "$APP/Contents/MacOS/SourceLinga"
 cp "$SRC/Resources/logo.png" "$APP/Contents/Resources/logo.png"
 cp "$HERE/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+# The engine travels inside the app, so "Set up on this Mac" needs no download from GitHub and no Terminal.
+# Only shipped files: never config.json, house-rules.md, local/, data/ or evals/local-cases.json.
+ENG="$APP/Contents/Resources/engine"
+mkdir -p "$ENG/evals" "$ENG/prompts" "$ENG/dist"
+cp -R "$ROOT/forge" "$ROOT/web" "$ROOT/skills" "$ROOT/workflows" "$ENG/"
+cp "$ROOT"/prompts/*.md "$ENG/prompts/"
+cp "$ROOT/evals/cases.json" "$ROOT/evals/local-cases.example.json" "$ENG/evals/"
+cp "$ROOT"/{install.sh,uninstall.sh,restart.sh,config.example.json,house-rules.example.md,house-rules.template.md,strategies.json,LICENSE,README.md} "$ENG/"
+[ -f "$OUT/SourceLinga.apk" ] && cp "$OUT/SourceLinga.apk" "$ENG/dist/"
+find "$ENG" \( -name __pycache__ -o -name .DS_Store -o -name '._*' \) -prune -exec rm -rf {} + 2>/dev/null || true
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
