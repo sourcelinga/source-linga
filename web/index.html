@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Source Linga</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/logo-64.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Source Linga">
+<meta name="theme-color" content="#000000">
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--ink:#1d1d1b;--mute:#6b6a66;--line:#e3e1dc;--accent:#2f6b4f;--accent-ink:#fff;--warn:#a5481d;--good:#2f6b4f;--code:#f1efea;--chip:#ecebe6}
+@media (prefers-color-scheme:dark){:root{--bg:#151614;--panel:#1d1f1c;--ink:#ecebe6;--mute:#9a9992;--line:#2e302c;--accent:#6fbf93;--accent-ink:#0f1a14;--warn:#e08a5f;--good:#6fbf93;--code:#232521;--chip:#2a2c28}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;letter-spacing:.2px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+header h1 img{width:26px;height:26px;border-radius:6px}
+header .dot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block;margin-right:6px}
+header .dot.on{background:var(--good)}
+#status{color:var(--mute);font-size:13px}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav button{background:none;border:0;padding:7px 12px;border-radius:8px;color:var(--mute);font:inherit;cursor:pointer}
+nav button.on{background:var(--chip);color:var(--ink);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 80px}
+section{display:none}section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{min-height:90px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:160px}
+button.primary,button.btn{font:inherit;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+.muted{color:var(--mute);font-size:13px}
+pre,code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+pre{background:var(--code);padding:12px;border-radius:8px;overflow:auto;white-space:pre-wrap;word-break:break-word;max-height:480px;margin:8px 0}
+.log{max-height:180px;font-size:12px;color:var(--mute)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--chip);border-radius:999px;padding:2px 10px;font-size:12px}
+.chip input{width:auto;margin-right:4px}
+.score{font-weight:700;font-variant-numeric:tabular-nums}
+.win{color:var(--good)}.lose{color:var(--warn)}
+.diff .add{color:var(--good)}.diff .del{color:var(--warn)}
+.msgs{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.msg{padding:10px 14px;border-radius:12px;max-width:85%;background:var(--panel);border:1px solid var(--line)}
+.msg.user{align-self:flex-end;background:var(--chip);border-color:transparent}
+.msg .st{color:var(--mute);font-size:13px;font-style:italic}
+.msg.busy .body:empty::after{content:"▍";animation:blink 1s steps(2) infinite;color:var(--mute)}
+@keyframes blink{50%{opacity:0}}
+.big{font:700 34px/1.1 ui-monospace,Menlo,monospace;letter-spacing:6px}
+.steps li{margin:4px 0}
+.switch{display:flex;gap:8px;align-items:center;cursor:pointer}.switch input{width:auto}
+.msg p{margin:.3em 0}
+.list{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:6px}
+.list div{padding:5px 10px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--line);word-break:break-all}
+.list div:hover{background:var(--chip)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.tabs{display:flex;gap:6px;margin:8px 0}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (max-width:640px){.msg{max-width:100%}header{gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+  nav{margin-left:0;width:100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}nav button{white-space:nowrap}
+  main{padding:12px 12px 24px}#chat .card.input{position:sticky;bottom:0;margin-bottom:0;padding-bottom:max(12px,env(safe-area-inset-bottom));border-radius:12px 12px 0 0}
+  #chatIn{font-size:16px!important}}
+@media (pointer:coarse){#chatInfo{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1><img src="/logo-64.png" alt="">Source Linga</h1>
+  <span id="status"><span class="dot"></span>connecting…</span>
+  <nav id="nav">
+    <button data-t="chat" class="on">Chat</button>
+    <button data-t="improve">Improve</button>
+    <button data-t="workflows">Workflows</button>
+    <button data-t="knowledge">Knowledge</button>
+    <button data-t="updates">Updates</button>
+    <button data-t="prompts">Self-prompts</button>
+    <button data-t="devices" id="navDevices" hidden>Devices</button>
+  </nav>
+</header>
+<main>
+
+<section id="chat" class="on">
+  <div class="msgs" id="msgs"></div>
+  <div class="card input">
+    <textarea id="chatIn" placeholder="Ask anything. Example: “How could my outreach skill get more replies?” or “Find a better way to do this task.”" style="font-family:inherit;font-size:15px;min-height:70px"></textarea>
+    <div class="flex" style="margin-top:8px"><button class="primary" id="chatGo">Send</button><button class="btn" id="chatClear">New chat</button><span class="muted" id="chatInfo">⌘↵ to send</span></div>
+  </div>
+</section>
+
+<section id="improve">
+  <div class="card">
+    <div class="row">
+      <div><label>Target file (skill, memory, workflow, script). Search:</label><input id="tSearch" placeholder="e.g. SKILL.md, outreach, my-script"><div class="list" id="tList"></div></div>
+      <div><label>…or paste text</label><textarea id="tText" style="min-height:250px" placeholder="Paste a prompt, email, skill or code here. Loading a file fills this."></textarea><div class="muted" id="tPath"></div></div>
+    </div>
+    <div class="row">
+      <div><label>What should be better?</label><input id="goal" placeholder="e.g. get more replies from cafés; fewer wasted tool calls; clearer steps for the agent"></div>
+      <div style="max-width:180px"><label>Type</label><select id="kind"><option>skill</option><option>prompt</option><option>workflow</option><option>code</option><option>answer</option></select></div>
+      <div style="max-width:110px"><label>Variants</label><input id="nv" type="number" min="1" max="8" value="4"></div>
+      <div style="max-width:110px"><label>Rounds</label><input id="rounds" type="number" min="1" max="3" value="1"></div>
+    </div>
+    <label>Strategies (leave all unticked to let Forge choose from past win-rates)</label>
+    <div class="chips" id="strats"></div>
+    <div class="flex" style="margin-top:12px"><button class="primary" id="impGo">Find a better version</button><span class="muted">Runs locally; each variant takes roughly 30–90 s.</span></div>
+    <pre class="log" id="impLog" hidden></pre>
+  </div>
+  <div id="impOut"></div>
+  <div class="card"><b>History</b><div id="runs" class="muted"></div></div>
+</section>
+
+<section id="workflows">
+  <div class="card">
+    <label>Workflow</label><select id="wfSel"></select>
+    <p class="muted" id="wfGoal"></p>
+    <div id="wfFields"></div>
+    <div class="flex" style="margin-top:12px"><button class="primary" id="wfGo">Draft + improve</button><span class="muted">Writes a draft, then tries several approaches and keeps the best one. House rules are enforced.</span></div>
+    <pre class="log" id="wfLog" hidden></pre>
+  </div>
+  <div id="wfOut"></div>
+</section>
+
+<section id="knowledge">
+  <div class="card">
+    <div class="flex"><b>Index</b><span class="muted" id="kStats"></span><button class="btn" id="kRe">Re-index changed files</button><button class="btn" id="kLes">Learn from new sessions</button></div>
+    <label>Search everything Forge knows</label>
+    <div class="flex"><input id="kq" placeholder="e.g. Gmail outreach failure, lot code, PayPal" style="flex:1"><button class="btn" id="kGo">Search</button></div>
+    <pre class="log" id="kLog" hidden></pre>
+    <div id="kOut"></div>
+  </div>
+  <div class="card"><b>Skills</b> <span class="muted">— expert playbooks. The best match for each request is added automatically (one at a time, to stay fast).</span><div id="skOut"></div></div>
+</section>
+
+<section id="updates">
+  <div class="card">
+    <div class="flex"><b>Auto-updates</b><button class="primary" id="uDue">Run what's due</button>
+      <button class="btn" data-u="model_updates">Check model updates</button>
+      <button class="btn" data-u="candidate_eval">Test a newer model</button>
+      <button class="btn" data-u="prompt_self_improve">Self-improve prompts</button></div>
+    <pre class="log" id="uLog" hidden></pre>
+    <div id="uOut"></div>
+  </div>
+</section>
+
+<section id="devices">
+  <div class="card">
+    <label class="switch"><input type="checkbox" id="lanOn"> <b>Let my iPhone, iPad and other Macs on this Wi-Fi use Source Linga</b></label>
+    <p class="muted">Everything still runs on this Mac; other devices only send questions to it. Each device must be paired once with the code below. Turning this on or off restarts the server (about 5 s).</p>
+    <div id="devOut"></div>
+  </div>
+</section>
+
+<section id="prompts">
+  <div class="card"><p class="muted">These are Forge's own instructions. Self-improvement rewrites <b>chat_system</b> and <b>draft</b> only when the test suite score goes up. The judge stays fixed, so Forge can't grade itself easier. Every old version is kept here.</p><div id="pOut"></div></div>
+</section>
+
+</main>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function api(path,body){const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}
+function md(t){let h=esc(t);h=h.replace(/```[\w-]*\n([\s\S]*?)```/g,(m,c)=>'<pre>'+c+'</pre>');h=h.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');return h.split(/\n{2,}/).map(p=>p.startsWith('<pre>')?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('')}
+async function poll(id,logEl,onDone){logEl.hidden=false;logEl.textContent='starting…';
+  for(;;){await new Promise(r=>setTimeout(r,1500));let j;try{j=await api('/api/job/'+id)}catch(e){logEl.textContent+='\n'+e;return}
+    logEl.textContent=j.log.join('\n');logEl.scrollTop=1e9;
+    if(j.status!=='running'){if(j.error)logEl.textContent+='\nERROR: '+j.error;onDone&&onDone(j);return}}}
+
+// nav
+$$('#nav button').forEach(b=>b.onclick=()=>{$$('#nav button').forEach(x=>x.classList.toggle('on',x===b));$$('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));
+  ({updates:loadStatus,prompts:loadPrompts,improve:loadRuns,knowledge:loadStatus,devices:loadDevices})[b.dataset.t]?.()});
+
+// status
+let ST={};
+async function loadStatus(){try{ST=await api('/api/status')}catch(e){$('#status').innerHTML='<span class="dot"></span>server error';return}
+  $('#status').innerHTML=`<span class="dot ${ST.ollama?'on':''}"></span>${ST.ollama?esc(ST.model):'Ollama is not running'} · ${ST.index.files} files · ${ST.index.lessons} lessons`;
+  $('#kStats').textContent=`${ST.index.files} files, ${ST.index.transcripts} sessions, ${ST.index.chunks} chunks, ${ST.index.lessons} lessons`;
+  const last=Object.entries(ST.last).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')||'<tr><td colspan=2>never</td></tr>';
+  const inst=ST.installed.map(m=>`<span class="chip">${esc(m.name)} · ${m.gb} GB</span>`).join(' ');
+  const sc=ST.scores.map(s=>`<tr><td>${esc(s.model)}</td><td class="score">${(s.score*100).toFixed(0)}%</td><td>${s.tps} tok/s</td><td>${esc(s.created)}</td></tr>`).join('');
+  const strat=Object.entries(ST.strategies).sort((a,b)=>b[1][0]/b[1][1]-a[1][0]/a[1][1]).map(([k,[w,t]])=>`<tr><td>${esc(k)}</td><td>${w} wins / ${t} tries</td></tr>`).join('');
+  const ev=ST.events.map(e=>`<tr><td class="muted">${esc(e.created)}</td><td>${esc(e.kind)}</td><td>${esc(e.message)}</td></tr>`).join('');
+  $('#uOut').innerHTML=`<p>Active models on <b>${esc(ST.models_dir)}</b> · archive <b>${esc(ST.archive_dir||'none')}</b>${ST.archive_ok?'':' <span class="lose">(drive not connected)</span>'}</p>
+   <label>Archived models (restore without re-downloading)</label><div class="chips">${(ST.archived||[]).map(m=>`<button class="btn" data-restore="${esc(m)}">${esc(m)} ↺</button>`).join(' ')||'none'}</div><p>Active model <b>${esc(ST.model)}</b> · embedder ${esc(ST.embed_model)} · Ollama ${esc(ST.ollama_version||'—')}</p>
+   <label>Installed models</label><div class="chips">${inst||'none'}</div>
+   <div class="row"><div><label>Last runs</label><table>${last}</table></div><div><label>Model test scores</label><table>${sc||'<tr><td>none yet</td></tr>'}</table></div></div>
+   <label>Strategy win-rates (Forge prefers the winners)</label><table>${strat||'<tr><td>no runs yet</td></tr>'}</table>
+   <label>Event log</label><table>${ev||'<tr><td>nothing yet</td></tr>'}</table>`;
+  $$('[data-restore]').forEach(b=>b.onclick=async()=>{const m=b.dataset.restore;if(!confirm('Copy '+m+' back to the internal disk and make it the active model?'))return;
+    const {job}=await api('/api/restore',{model:m});await poll(job,$('#uLog'),loadStatus)})}
+loadStatus();setInterval(loadStatus,30000);
+
+// chat (streamed: words appear as they are written)
+let convo=[],ctrl=null;
+const meta=d=>[d.skill?'skill: '+d.skill:'',d.tools&&d.tools.length?'tools: '+d.tools.join(', '):'',d.first_token_secs!=null?'first words '+d.first_token_secs+' s':'',d.secs!=null?'total '+d.secs+' s':'',d.tps?d.tps+' tok/s':''].filter(Boolean).join(' · ');
+function bubble(m){return `<div class="msg ${m.role}${m.busy?' busy':''}">${m.status?`<div class="st">${esc(m.status)}</div>`:''}<div class="body">${md(m.content)}</div>${m.meta?`<div class="muted">${esc(m.meta)}</div>`:''}</div>`}
+function renderChat(){$('#msgs').innerHTML=convo.map(bubble).join('');window.scrollTo(0,document.body.scrollHeight)}
+function renderLast(){const els=$('#msgs').children;if(!els.length)return renderChat();els[els.length-1].outerHTML=bubble(convo[convo.length-1]);
+  if(innerHeight+scrollY>document.body.scrollHeight-200)window.scrollTo(0,document.body.scrollHeight)}
+async function send(){const t=$('#chatIn').value.trim();if(!t)return;
+  convo.push({role:'user',content:t});$('#chatIn').value='';
+  const m={role:'assistant',content:'',status:'Reading your notes…',busy:true};convo.push(m);renderChat();
+  ctrl=new AbortController();$('#chatGo').textContent='Stop';
+  try{const r=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
+        body:JSON.stringify({messages:convo.slice(0,-1).map(({role,content})=>({role,content}))})});
+    if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||('HTTP '+r.status));
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+      while((i=buf.indexOf('\n\n'))>=0){const line=buf.slice(0,i);buf=buf.slice(i+2);if(!line.startsWith('data: '))continue;const ev=JSON.parse(line.slice(6));
+        if(ev.type==='token'){m.content+=ev.text;m.status=''}
+        else if(ev.type==='status')m.status=ev.text;
+        else if(ev.type==='tool'){m.status='Using '+ev.name+'…';m.content=''}
+        else if(ev.type==='done'){if(ev.content)m.content=ev.content;m.meta=meta(ev);m.status=''}}
+      renderLast()}}
+  catch(e){if(e.name==='AbortError')m.meta='stopped';else m.content+=(m.content?'\n\n':'')+'⚠ '+e.message}
+  m.busy=false;m.status='';if(!m.content)m.content='(no answer)';renderLast();ctrl=null;$('#chatGo').textContent='Send'}
+$('#chatGo').onclick=()=>ctrl?ctrl.abort():send();
+$('#chatIn').onkeydown=e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();if(!ctrl)send()}};
+$('#chatClear').onclick=()=>{if(ctrl)ctrl.abort();convo=[];renderChat()};
+// read ahead: after a short pause in typing, the Mac starts reading the draft so Send answers faster
+let aheadT,aheadLast='';
+$('#chatIn').addEventListener('input',()=>{clearTimeout(aheadT);aheadT=setTimeout(()=>{const t=$('#chatIn').value.trim();
+  if(ctrl||t.length<8||t===aheadLast)return;aheadLast=t;
+  fetch('/api/read_ahead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:convo.map(({role,content})=>({role,content})).concat([{role:'user',content:t}])})}).catch(()=>{})},1500)});
+fetch('/api/warm').catch(()=>{});  // load the model while you type
+
+// improve
+let curPath=null;
+(async()=>{const s=await api('/api/strategies');$('#strats').innerHTML=Object.entries(s).map(([k,v])=>`<label class="chip" title="${esc(v)}"><input type="checkbox" value="${k}">${k}</label>`).join('')})();
+let tt;$('#tSearch').oninput=()=>{clearTimeout(tt);tt=setTimeout(async()=>{const l=await api('/api/targets?q='+encodeURIComponent($('#tSearch').value));$('#tList').innerHTML=l.map(p=>`<div data-p="${esc(p)}">${esc(p.replace(/^\/Users\/[^/]+/,'~'))}</div>`).join('')||'<div class="muted">no match (is the index built?)</div>'},250)};
+$('#tList').onclick=async e=>{const p=e.target.dataset.p;if(!p)return;const f=await api('/api/file?path='+encodeURIComponent(p));$('#tText').value=f.text;curPath=f.path;$('#tPath').textContent='Loaded: '+f.path;
+  $('#kind').value=/\.(py|js|php|sh|json|css|html)$/.test(p)?'code':(/SKILL\.md$|skills\//.test(p)?'skill':'workflow')};
+$('#tText').oninput=()=>{if(curPath){$('#tPath').textContent='Edited — Apply will still write to '+curPath}};
+$('#tSearch').dispatchEvent(new Event('input'));
+$('#impGo').onclick=async()=>{const text=$('#tText').value;if(!text.trim())return alert('Load a file or paste text first.');$('#impGo').disabled=true;$('#impOut').innerHTML='';
+  const strategies=$$('#strats input:checked').map(i=>i.value);
+  try{const {job}=await api('/api/improve',{text,path:curPath,goal:$('#goal').value,kind:$('#kind').value,n:+$('#nv').value,rounds:+$('#rounds').value,strategies:strategies.length?strategies:null});
+    await poll(job,$('#impLog'),j=>j.result&&renderResult(j.result,$('#impOut')))}catch(e){alert(e.message)}$('#impGo').disabled=false;loadRuns()};
+
+function diffHtml(d){return d.split('\n').map(l=>`<span class="${l.startsWith('+')&&!l.startsWith('+++')?'add':l.startsWith('-')&&!l.startsWith('---')?'del':''}">${esc(l)}</span>`).join('\n')}
+function renderResult(r,el){const rub=o=>Object.entries(o).map(([k,v])=>`${k} ${v}`).join(' · ');
+  el.innerHTML=`<div class="card"><b>Original</b> <span class="score">${(r.original_score*100).toFixed(0)}%</span> <span class="muted">${esc(rub(r.original_rubric))}</span><div class="muted">${esc(r.original_reason)}</div>
+   <div class="muted">Context used: ${esc((r.sources||[]).map(s=>s.split('/').pop()).join(', ')||'none')}</div></div>`+
+  r.variants.map((v,i)=>`<div class="card"><div class="flex"><b>#${v.rank} ${esc(v.strategy)}</b><span class="score ${v.score>r.original_score?'win':'lose'}">${(v.score*100).toFixed(0)}%</span>
+     ${v.pairwise?`<span class="chip">${esc(v.pairwise)}</span>`:''}${v.beats_original?'<span class="chip win">✓ better than original</span>':''}
+     ${v.check?`<span class="chip ${v.check.ok?'win':'lose'}">${v.check.ok?'check passed':'check failed'}</span>`:''}</div>
+    <div class="muted">${esc(rub(v.rubric))}</div><div class="muted">${esc(v.reason)}</div>
+    <div class="tabs"><button class="btn" data-v="t">Text</button><button class="btn" data-v="d">Diff</button><button class="btn" data-copy>Copy</button>
+    ${r.path&&!/^\w+:/.test(r.path)?`<button class="btn" data-apply="${i}">Apply to file (backup kept)</button>`:''}</div>
+    <pre class="vt">${esc(v.text)}</pre><pre class="vd diff" hidden>${diffHtml(v.diff||'(no change)')}</pre></div>`).join('');
+  el.querySelectorAll('.card').forEach((c,ci)=>{if(!ci)return;const v=r.variants[ci-1];
+    c.querySelector('[data-v=t]').onclick=()=>{c.querySelector('.vt').hidden=false;c.querySelector('.vd').hidden=true};
+    c.querySelector('[data-v=d]').onclick=()=>{c.querySelector('.vt').hidden=true;c.querySelector('.vd').hidden=false};
+    c.querySelector('[data-copy]').onclick=e=>{navigator.clipboard.writeText(v.text);e.target.textContent='Copied'};
+    const a=c.querySelector('[data-apply]');if(a)a.onclick=async()=>{if(!confirm('Overwrite '+r.path+' with this version? A backup is saved first.'))return;
+      try{const w=await api('/api/apply',{run_id:r.run_id,variant:ci-1});a.textContent='Written ✓';alert('Written. Backup: '+(w.backup||'(new file)'))}catch(e){alert(e.message)}}})}
+async function loadRuns(){const rs=await api('/api/runs');$('#runs').innerHTML=rs.map(r=>`<div class="list" style="max-height:none;border:0"><div data-r="${r.id}">${esc(r.created)} · ${esc(r.kind)} · ${esc((r.target||'').replace(/^\/Users\/[^/]+/,'~').slice(0,90))}</div></div>`).join('')||'none yet';
+  $$('#runs [data-r]').forEach(d=>d.onclick=async()=>{const run=await api('/api/run/'+d.dataset.r);run.result.run_id=run.id;renderResult(run.result,$('#impOut'));window.scrollTo(0,0)})}
+
+// workflows
+let WF=[];(async()=>{WF=await api('/api/workflows');$('#wfSel').innerHTML=WF.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');showWf()})();
+function showWf(){const w=WF.find(x=>x.id===$('#wfSel').value);if(!w)return;$('#wfGoal').textContent=w.goal;$('#wfFields').innerHTML=w.fields.map(f=>`<label>${esc(f)}</label><input data-f="${esc(f)}">`).join('')}
+$('#wfSel').onchange=showWf;
+$('#wfGo').onclick=async()=>{const inputs={};$$('#wfFields input').forEach(i=>inputs[i.dataset.f]=i.value);$('#wfGo').disabled=true;$('#wfOut').innerHTML='';
+  try{const {job}=await api('/api/workflow',{id:$('#wfSel').value,inputs});await poll(job,$('#wfLog'),j=>j.result&&renderResult(j.result,$('#wfOut')))}catch(e){alert(e.message)}$('#wfGo').disabled=false};
+
+// knowledge
+$('#kGo').onclick=async()=>{const r=await api('/api/search?q='+encodeURIComponent($('#kq').value));$('#kOut').innerHTML=r.map(h=>`<label>${esc(h.path.replace(/^\/Users\/[^/]+/,'~'))} <span class="chip">${h.score}</span></label><pre>${esc(h.text.slice(0,1200))}</pre>`).join('')||'<p class="muted">No results.</p>'};
+$('#kq').onkeydown=e=>{if(e.key==='Enter')$('#kGo').click()};
+async function upd(only,log){const {job}=await api('/api/update',{only,force:true});await poll(job,log,loadStatus)}
+$('#kRe').onclick=()=>upd(['knowledge'],$('#kLog'));$('#kLes').onclick=()=>upd(['lessons'],$('#kLog'));
+
+// skills
+(async()=>{try{const sk=await api('/api/skills');$('#skOut').innerHTML='<table>'+sk.map(k=>`<tr><td><b>${esc(k.name)}</b><div class="muted">${esc(k.description)}</div></td><td class="muted">${esc(k.source.replace(/ —.*/,''))}</td></tr>`).join('')+'</table>'}catch(e){}})();
+
+// devices (only shown on the Mac itself)
+async function loadDevices(){let d;try{d=await api('/api/devices')}catch(e){return}
+  $('#navDevices').hidden=false;$('#lanOn').checked=d.lan_access;
+  if(!d.listening_on_lan){$('#devOut').innerHTML=d.lan_access?'<p>Restarting…</p>':'<p class="muted">Off: only this Mac can use Source Linga.</p>';return}
+  const u=d.urls[0]||'';
+  $('#devOut').innerHTML=`<div class="row"><div><label>Address on your Wi-Fi</label>${d.urls.map(x=>`<div><code>${esc(x)}</code></div>`).join('')}</div>
+    <div><label>Pairing code</label><div class="big">${esc(d.pair_code)}</div></div></div>
+   <label>iPhone / iPad</label><ol class="steps"><li>Connect to the same Wi-Fi as this Mac.</li><li>Open Safari and go to <code>${esc(u)}</code>.</li><li>Type the pairing code.</li><li>Tap Share → <b>Add to Home Screen</b>. It now opens like an app.</li></ol>
+   <label>Another Mac</label><ol class="steps"><li>Open <code>${esc(u)}</code> in Safari and type the code.</li><li>File → <b>Add to Dock</b>.</li></ol>
+   <label>Native apps (Enchanted on iPhone/iPad/Mac, or any OpenAI-compatible app)</label>
+   <ol class="steps"><li>Enchanted → Settings → Ollama server URI: <code>${esc(u)}/ollama</code>, Bearer token: the app key below. Pick the model <b>source-linga</b>.</li>
+   <li>OpenAI-compatible apps: base URL <code>${esc(u)}/v1</code>, API key: the app key, model <code>source-linga</code>.</li></ol>
+   <label>Siri / Shortcuts</label><ol class="steps"><li>New shortcut “Ask Source Linga”: <b>Ask for Text</b> → <b>Get Contents of URL</b> <code>${esc(u)}/v1/chat/completions</code>, Method POST, Header <code>Authorization: Bearer &lt;app key&gt;</code>, Request Body JSON: <code>model</code>=source-linga, <code>messages</code> = [ {<code>role</code>: user, <code>content</code>: Provided Input} ].</li>
+   <li><b>Get Dictionary Value</b> <code>choices.1.message.content</code> → <b>Speak Text</b> or <b>Show Result</b>. Then say “Hey Siri, Ask Source Linga”.</li></ol>
+   <div class="flex"><button class="btn" id="showKey">Show app key</button><code id="keyOut" hidden>${esc(d.device_key)}</code><button class="btn" id="copyKey" hidden>Copy</button>
+   <button class="btn" id="newKey">New key (un-pairs every device)</button></div>`;
+  $('#showKey').onclick=()=>{$('#keyOut').hidden=false;$('#copyKey').hidden=false;$('#showKey').hidden=true};
+  $('#copyKey').onclick=e=>{navigator.clipboard.writeText(d.device_key);e.target.textContent='Copied'};
+  $('#newKey').onclick=async()=>{if(!confirm('Make a new key and pairing code? Every paired iPhone, iPad and app must pair again.'))return;await api('/api/devices',{new_key:true});loadDevices()}}
+$('#lanOn').onchange=async e=>{const on=e.target.checked;if(!confirm(on?'Allow devices on this Wi-Fi (after pairing)? The server restarts.':'Stop access from other devices? The server restarts.')){e.target.checked=!on;return}
+  await api('/api/devices',{lan_access:on}).catch(()=>{});$('#devOut').innerHTML='<p>Restarting…</p>';
+  for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,2000));try{await api('/api/status');break}catch(e){}}loadDevices()};
+loadDevices();
+
+// updates
+$('#uDue').onclick=async()=>{const {job}=await api('/api/update',{force:false});await poll(job,$('#uLog'),loadStatus)};
+$$('[data-u]').forEach(b=>b.onclick=()=>upd([b.dataset.u],$('#uLog')));
+
+// prompts
+async function loadPrompts(){const ps=await api('/api/prompts');$('#pOut').innerHTML=ps.map(p=>`<div class="card"><b>${esc(p.name)}</b> ${['judge','judge_pair'].includes(p.name)?'<span class="chip">frozen</span>':''}<pre>${esc(p.text)}</pre>
+  ${p.history.length?`<label>Previous versions</label><div class="chips">${p.history.map(h=>`<button class="btn" data-rb="${esc(p.name)}|${esc(h)}">restore ${esc(h.replace('.md',''))}</button>`).join('')}</div>`:''}</div>`).join('');
+  $$('[data-rb]').forEach(b=>b.onclick=async()=>{const [name,version]=b.dataset.rb.split('|');if(!confirm('Restore '+name+' to '+version+'?'))return;await api('/api/prompts/rollback',{name,version});loadPrompts()})}
+</script>
+</body>
+</html>

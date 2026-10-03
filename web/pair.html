@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pair · Source Linga</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Source Linga">
+<meta name="theme-color" content="#000000">
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--ink:#1d1d1b;--mute:#6b6a66;--line:#e3e1dc;--accent:#2f6b4f;--accent-ink:#fff;--warn:#a5481d}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0e0d;--panel:#1a1c19;--ink:#ecebe6;--mute:#9a9992;--line:#2e302c;--accent:#6fbf93;--accent-ink:#0f1a14;--warn:#e08a5f}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;padding:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 22px;max-width:380px;width:100%;text-align:center}
+img{width:72px;height:72px;border-radius:16px}
+h1{font-size:20px;margin:12px 0 4px}
+p{color:var(--mute);margin:6px 0 18px;font-size:14px}
+input{width:100%;font:600 28px/1 ui-monospace,Menlo,monospace;letter-spacing:8px;text-align:center;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{margin-top:14px;width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-ink);font:600 16px/1 inherit;cursor:pointer}
+#msg{min-height:22px;margin-top:10px;font-size:14px;color:var(--warn)}
+</style>
+</head>
+<body>
+<form class="card" id="f">
+  <img src="/icon-180.png" alt="">
+  <h1>Pair this device</h1>
+  <p>On your Mac, open Source Linga → <b>Devices</b> and type the 6-digit code shown there.</p>
+  <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
+  <button type="submit">Pair</button>
+  <div id="msg"></div>
+</form>
+<script>
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();const m=document.getElementById('msg');m.textContent='';
+  try{const r=await fetch('/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:document.getElementById('code').value})});
+    const j=await r.json();if(r.ok){location.href='/'}else m.textContent=j.error||'Could not pair'}catch(err){m.textContent='Cannot reach the Mac. Same Wi-Fi?'}};
+</script>
+</body>
+</html>
